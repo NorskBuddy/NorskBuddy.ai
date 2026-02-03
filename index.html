@@ -21,7 +21,10 @@ body {
   position: relative;
 }
 
-h1, h2 { text-align: center; }
+h1, h2 {
+  text-align: center;
+}
+
 .hidden { display: none; }
 
 button {
@@ -59,6 +62,20 @@ button.secondary { background: #1cb0f6; }
   cursor: pointer;
 }
 
+.lesson img {
+  width: 60px;
+}
+
+.preview {
+  margin-top: 15px;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.preview img {
+  width: 100%;
+}
+
 #prev {
   position: absolute;
   top: 12px;
@@ -66,21 +83,6 @@ button.secondary { background: #1cb0f6; }
   width: auto;
   padding: 8px 14px;
 }
-
-.match {
-  display: flex;
-  gap: 10px;
-}
-
-.col { flex: 1; }
-
-.option {
-  background: #eee;
-  color: #333;
-}
-
-.option.selected { background: #1cb0f6; color: white; }
-.option.matched { background: #58cc02; color: white; }
 </style>
 </head>
 
@@ -90,7 +92,7 @@ button.secondary { background: #1cb0f6; }
 <h1>🇳🇴 Norsk Buddy</h1>
 <img class="mascot" src="assets/mascots/mascot-man.png">
 
-<!-- GOALS -->
+<!-- GOAL SELECTION -->
 <div id="screen-goals" class="hidden">
   <h2>What are your ambitions for learning Norsk?</h2>
   <button onclick="setGoal()">Visiting Norway</button>
@@ -102,32 +104,44 @@ button.secondary { background: #1cb0f6; }
 <!-- HOME -->
 <div id="screen-home" class="hidden">
   <h2>Your Journey</h2>
-  <div class="lesson-grid" id="lessonGrid"></div>
+
+  <div class="lesson-grid">
+    <div class="lesson" onclick="openLesson(1)">
+      ⛰️<br>Greetings
+    </div>
+    <div class="lesson" onclick="openLesson(2)">
+      ⛰️<br>Courtesy
+    </div>
+    <div class="lesson" onclick="openLesson(3)">
+      ⛰️<br>Needs
+    </div>
+    <div class="lesson" onclick="openLesson(4)">
+      ⛰️<br>Numbers
+    </div>
+    <div class="lesson" onclick="openLesson('slang')">
+      ⛰️<br>Slang
+    </div>
+  </div>
+
+  <div class="preview">
+    <img id="lesson-preview" src="">
+  </div>
 </div>
 
 <!-- LESSON -->
 <div id="screen-lesson" class="hidden">
   <button id="prev" onclick="goHome()">← Home</button>
+
   <h2 id="word-no"></h2>
   <p><strong>English:</strong> <span id="word-en"></span></p>
+
   <button class="secondary" onclick="playAudio()">🔊 Play</button>
   <button onclick="nextWord()">Next</button>
-</div>
-
-<!-- MATCH -->
-<div id="screen-match" class="hidden">
-  <h2>Match the words</h2>
-  <div class="match">
-    <div class="col" id="en-col"></div>
-    <div class="col" id="no-col"></div>
-  </div>
 </div>
 
 </div>
 
 <script>
-/* ========= LESSON DATA ========= */
-
 const lessons = {
   greetings: [
     ['Hallo','Hello'],['Ha det','Goodbye']
@@ -178,128 +192,66 @@ const lessons = {
   ]
 };
 
-/* ========= STATE ========= */
+const images = [
+  'assets/images/norway1.jpg',
+  'assets/images/norway2.jpg',
+  'assets/images/norway3.jpg',
+  'assets/images/norway4.jpg',
+  'assets/images/norway5.jpg'
+];
 
-let sequence=[], index=0, lessonKey=null, selected=null, matched=0;
+let currentLesson, index = 0;
 
-/* ========= INIT ========= */
-
-const lessonNames = {
-  greetings:'Greetings',courtesy:'Courtesy',needs:'Needs',numbers:'Numbers',
-  slang:'Slang',whWords:'Who / What / Where',colors:'Colors',
-  professions:'Professions',feelings:'Feelings',theirThere:'Their / There'
-};
-
-const grid = document.getElementById('lessonGrid');
-for (let k in lessonNames) {
-  const d=document.createElement('div');
-  d.className='lesson';
-  d.innerHTML='⛰️<br>'+lessonNames[k];
-  d.onclick=()=>startLesson(k);
-  grid.appendChild(d);
-}
-
-function setGoal(){
-  localStorage.setItem('goal','1');
+function setGoal() {
+  localStorage.setItem('goalSelected', 'true');
   show('screen-home');
 }
 
-function show(id){
-  document.querySelectorAll('[id^=screen]').forEach(s=>s.classList.add('hidden'));
+function show(id) {
+  document.querySelectorAll('[id^=screen]').forEach(s => s.classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
 }
 
-function startLesson(key){
-  lessonKey=key;
-  index=0;
-  matched=0;
-  sequence=buildSequence(lessons[key]);
+function openLesson(id) {
+  currentLesson = lessons[id];
+  index = 0;
+  document.getElementById('lesson-preview').src =
+    images[Math.floor(Math.random()*images.length)];
   show('screen-lesson');
   showWord();
 }
 
-function buildSequence(arr){
-  let base=[...arr];
-  let extras=[];
-  base.forEach((w,i)=>{
-    if(i>1 && Math.random()<0.4) extras.push(w);
-  });
-  return shuffle([...base,...extras]);
+function showWord() {
+  const w = currentLesson[index];
+  document.getElementById('word-no').textContent = w.no;
+  document.getElementById('word-en').textContent = w.en;
 }
 
-function shuffle(a){return a.sort(()=>Math.random()-0.5);}
-
-function showWord(){
-  document.getElementById('word-no').textContent=sequence[index][0];
-  document.getElementById('word-en').textContent=sequence[index][1];
-}
-
-function nextWord(){
-  if(index<sequence.length-1){index++;showWord();}
-  else startMatch();
-}
-
-function playAudio(){
-  const f=`Norsk-Buddy-Audio/${sequence[index][0]}.mp3`;
-  new Audio(f).play().catch(()=>{});
-}
-
-/* ========= MATCH ========= */
-
-function startMatch(){
-  show('screen-match');
-  const en=document.getElementById('en-col');
-  const no=document.getElementById('no-col');
-  en.innerHTML=no.innerHTML='';
-  selected=null; matched=0;
-
-  const shuffled=shuffle([...lessons[lessonKey]]);
-  lessons[lessonKey].forEach(w=>{
-    const b=document.createElement('button');
-    b.className='option';
-    b.textContent=w[1];
-    b.onclick=()=>{select(b,w)};
-    en.appendChild(b);
-  });
-
-  shuffled.forEach(w=>{
-    const b=document.createElement('button');
-    b.className='option';
-    b.textContent=w[0];
-    b.onclick=()=>check(b,w);
-    no.appendChild(b);
-  });
-}
-
-function select(btn,w){
-  clear('en-col');
-  btn.classList.add('selected');
-  selected=w;
-}
-
-function check(btn,w){
-  if(!selected) return;
-  if(w[0]===selected[0]){
-    btn.classList.add('matched');
-    matched++;
-    if(matched===lessons[lessonKey].length){
-      alert('Lesson complete!');
-      goHome();
-    }
+function nextWord() {
+  if (index < currentLesson.length - 1) {
+    index++;
+    showWord();
   } else {
-    btn.style.background='red';
-    setTimeout(()=>btn.style.background='',800);
+    alert('Lesson complete!');
+    show('screen-home');
   }
-  selected=null;
 }
 
-function clear(id){
-  document.querySelectorAll('#'+id+' .option').forEach(b=>b.classList.remove('selected'));
+function playAudio() {
+  const w = currentLesson[index];
+  if (!w.audio) return;
+  new Audio(w.audio).play();
 }
 
-function goHome(){ show('screen-home'); }
+function goHome() {
+  show('screen-home');
+}
 
-if(localStorage.getItem('goal')) show('screen-home'); else show('screen-goals');
+if (localStorage.getItem('goalSelected')) {
+  show('screen-home');
+} else {
+  show('screen-goals');
+}
 </script>
 
 </body>
