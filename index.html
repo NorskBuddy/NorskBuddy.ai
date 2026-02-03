@@ -227,5 +227,160 @@ if (localStorage.getItem('goalSelected')) {
 }
 </script>
 
+  <script>
+/* =========================
+   NEW LESONS (APPEND ONLY)
+   ========================= */
+
+const newLessons = {
+
+  "who-what-why-where": {
+    title: "Who, What, Why, and Where",
+    words: [
+      { no: "hvem", en: "who" },
+      { no: "hva", en: "what" },
+      { no: "hvor", en: "where" },
+      { no: "hvorfor", en: "why" },
+      { no: "når", en: "when" },
+      { no: "gikk", en: "went" },
+      { no: "går", en: "is going" },
+      { no: "vil gå", en: "will go" },
+      { no: "har gått", en: "has went" },
+      { no: "hvem er", en: "who is" },
+      { no: "hvem var", en: "who was" },
+      { no: "hvem vil", en: "who will" },
+      { no: "hva er", en: "what is / are" },
+      { no: "hva har", en: "what has / have" },
+      { no: "hva vil", en: "what will" },
+      { no: "hvor er", en: "where is / are" },
+      { no: "hvor har", en: "where has" },
+      { no: "hvor vil", en: "where will" },
+      { no: "når har", en: "when has" },
+      { no: "når vil", en: "when will" },
+      { no: "når er", en: "when is" },
+      { no: "hvorfor er det", en: "why is it" },
+      { no: "hvorfor har", en: "why has" },
+      { no: "hvorfor vil", en: "why will" }
+    ]
+  },
+
+  "colors": {
+    title: "Colors",
+    words: [
+      { no: "rød", en: "red" },
+      { no: "blå", en: "blue" },
+      { no: "gul", en: "yellow" },
+      { no: "guld", en: "gold" },
+      { no: "lilla", en: "purple" },
+      { no: "rosa", en: "pink" },
+      { no: "grøn", en: "green" },
+      { no: "brun", en: "brown" },
+      { no: "svart", en: "black" },
+      { no: "hvit", en: "white" }
+    ]
+  },
+
+  "professions": {
+    title: "Professions",
+    words: [
+      { no: "ingeniør", en: "engineer" },
+      { no: "politi", en: "police" },
+      { no: "politimann", en: "policeman" },
+      { no: "politikvinne", en: "policewoman" },
+      { no: "postbud", en: "postman" },
+      { no: "kokk", en: "chef" },
+      { no: "bygningsarbeider", en: "construction worker" },
+      { no: "bussjåfør", en: "bus driver" },
+      { no: "lærer", en: "teacher" }
+    ]
+  },
+
+  "feelings": {
+    title: "Feelings",
+    words: [
+      { no: "følelse", en: "feeling" },
+      { no: "følelser", en: "feelings" },
+      { no: "føles", en: "feels" },
+      { no: "vil føle", en: "will feel" },
+      { no: "følte", en: "felt" },
+      { no: "glad", en: "happy" },
+      { no: "trist", en: "sad" },
+      { no: "sint", en: "mad" },
+      { no: "spennende", en: "exciting" }
+    ]
+  },
+
+  "numbers": {
+    title: "Numbers",
+    words: [
+      { no: "en", en: "one" },
+      { no: "to", en: "two" },
+      { no: "tre", en: "three" },
+      { no: "fire", en: "four" },
+      { no: "fem", en: "five" },
+      { no: "seks", en: "six" },
+      { no: "sju", en: "seven" },
+      { no: "åtte", en: "eight" },
+      { no: "ni", en: "nine" },
+      { no: "ti", en: "ten" }
+    ]
+  },
+
+  "their-there-theyre": {
+    title: "Their / There / They're",
+    words: [
+      { no: "der", en: "there" },
+      { no: "deres", en: "their" },
+      { no: "de er", en: "they are" }
+    ]
+  }
+
+};
+
+/* =========================
+   REPEAT + SHUFFLE LOGIC
+   ========================= */
+
+function buildLessonSequence(words) {
+  const base = [...words];
+  const repeats = [];
+
+  base.forEach((word, index) => {
+    if (Math.random() < 0.4 && index < base.length - 2) {
+      repeats.push(word);
+    }
+  });
+
+  return shuffleWithoutImmediateRepeat([...base, ...repeats]);
+}
+
+function shuffleWithoutImmediateRepeat(arr) {
+  let shuffled;
+  do {
+    shuffled = [...arr].sort(() => Math.random() - 0.5);
+  } while (
+    shuffled.some((item, i) => i > 0 && item.no === shuffled[i - 1].no)
+  );
+  return shuffled;
+}
+
+/* =========================
+   MERGE INTO EXISTING APP
+   ========================= */
+
+// Assumes your app already has a `lessons` object
+Object.assign(lessons, newLessons);
+
+// Wherever your app starts a lesson, ensure it uses:
+function startLesson(lessonId) {
+  currentLessonId = lessonId;
+  currentLessonWords = buildLessonSequence(lessons[lessonId].words);
+  currentWordIndex = 0;
+  correctAnswers = 0;
+  showNextWord();
+}
+</script>
+
+
 </body>
 </html>
