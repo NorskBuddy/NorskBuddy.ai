@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Norsk Buddy – Learn Norsk</title>
+<title>Norsk Buddy</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -19,12 +19,13 @@ body {
   min-height: 100vh;
   padding: 20px;
   position: relative;
-  text-align: center;
 }
 
 h1, h2 {
-  margin-top: 10px;
+  text-align: center;
 }
+
+.hidden { display: none; }
 
 button {
   width: 100%;
@@ -32,34 +33,50 @@ button {
   margin: 8px 0;
   font-size: 16px;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   background: #58cc02;
-  color: #fff;
+  color: white;
   cursor: pointer;
 }
 
-button.secondary {
-  background: #1cb0f6;
-}
-
-.hidden {
-  display: none;
-}
-
-.card {
-  background: #fafafa;
-  border-radius: 12px;
-  padding: 16px;
-  margin: 15px 0;
-}
+button.secondary { background: #1cb0f6; }
 
 .mascot {
   width: 110px;
-  height: auto;
-  margin: 0 auto 12px;
+  display: block;
+  margin: 10px auto;
 }
 
-#prev-top {
+.lesson-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.lesson {
+  background: #f0f8ff;
+  border-radius: 16px;
+  padding: 16px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.lesson img {
+  width: 60px;
+}
+
+.preview {
+  margin-top: 15px;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.preview img {
+  width: 100%;
+}
+
+#prev {
   position: absolute;
   top: 12px;
   left: 12px;
@@ -73,80 +90,141 @@ button.secondary {
 <div class="app">
 
 <h1>🇳🇴 Norsk Buddy</h1>
-<img id="mascot" class="mascot" src="assets/mascots/mascot-man.png" alt="Mascot">
+<img class="mascot" src="assets/mascots/mascot-man.png">
 
-<!-- Home -->
-<div id="screen-home">
-  <h2>Select a Lesson</h2>
-  <button id="start-lesson">Lesson 1: Greetings</button>
+<!-- GOAL SELECTION -->
+<div id="screen-goals" class="hidden">
+  <h2>What are your ambitions for learning Norsk?</h2>
+  <button onclick="setGoal()">Visiting Norway</button>
+  <button onclick="setGoal()">Curious about the language</button>
+  <button onclick="setGoal()">Conversational fluency</button>
+  <button onclick="setGoal()">Business fluency</button>
 </div>
 
-<!-- Lesson -->
-<div id="screen-lesson" class="hidden">
-  <button id="prev-top">← Home</button>
+<!-- HOME -->
+<div id="screen-home" class="hidden">
+  <h2>Your Journey</h2>
 
-  <div class="card">
-    <h2 id="word-no"></h2>
-    <p><strong>English:</strong> <span id="word-en"></span></p>
-    <button class="secondary" id="play-audio">🔊 Play Audio</button>
+  <div class="lesson-grid">
+    <div class="lesson" onclick="openLesson(1)">
+      ⛰️<br>Greetings
+    </div>
+    <div class="lesson" onclick="openLesson(2)">
+      ⛰️<br>Courtesy
+    </div>
+    <div class="lesson" onclick="openLesson(3)">
+      ⛰️<br>Needs
+    </div>
+    <div class="lesson" onclick="openLesson(4)">
+      ⛰️<br>Numbers
+    </div>
+    <div class="lesson" onclick="openLesson('slang')">
+      ⛰️<br>Slang
+    </div>
   </div>
 
-  <button id="next-word">Next</button>
+  <div class="preview">
+    <img id="lesson-preview" src="">
+  </div>
+</div>
+
+<!-- LESSON -->
+<div id="screen-lesson" class="hidden">
+  <button id="prev" onclick="goHome()">← Home</button>
+
+  <h2 id="word-no"></h2>
+  <p><strong>English:</strong> <span id="word-en"></span></p>
+
+  <button class="secondary" onclick="playAudio()">🔊 Play</button>
+  <button onclick="nextWord()">Next</button>
 </div>
 
 </div>
 
 <script>
-const lesson = [
-  { en: "Hello", no: "Hallo", audio: "Norsk-Buddy-Audio/Hallo.mp3" },
-  { en: "Goodbye", no: "Ha det", audio: "Norsk-Buddy-Audio/Ha_det.mp3" },
-  { en: "Welcome", no: "Velkommen", audio: "Norsk-Buddy-Audio/Velkommen.mp3" },
-  { en: "I", no: "Jeg", audio: "Norsk-Buddy-Audio/Jeg.mp3" },
-  { en: "How are you", no: "Hvordan har du det", audio: "Norsk-Buddy-Audio/Hvordan_har_du_det.mp3" },
-  { en: "I am well", no: "Jeg har det bra", audio: "Norsk-Buddy-Audio/Jeg_har_det_bra.mp3" },
-  { en: "My name is", no: "Jeg heter", audio: "Norsk-Buddy-Audio/Jeg_heter.mp3" },
-  { en: "Norway", no: "Norge", audio: "Norsk-Buddy-Audio/Norge.mp3" },
-  { en: "America", no: "Amerika", audio: "Norsk-Buddy-Audio/Amerika.mp3" }
-];
-
-let index = 0;
-
-const mascot = document.getElementById("mascot");
-const wordNo = document.getElementById("word-no");
-const wordEn = document.getElementById("word-en");
-
-function showWord() {
-  wordNo.textContent = lesson[index].no;
-  wordEn.textContent = lesson[index].en;
-}
-
-function playAudio() {
-  const audio = new Audio(lesson[index].audio);
-  audio.play();
-}
-
-document.getElementById("start-lesson").onclick = () => {
-  document.getElementById("screen-home").classList.add("hidden");
-  document.getElementById("screen-lesson").classList.remove("hidden");
-  index = 0;
-  showWord();
+const lessons = {
+  1: [
+    {en:'Hello',no:'Hallo',audio:'Norsk-Buddy-Audio/Hallo.mp3'},
+    {en:'Goodbye',no:'Ha det',audio:'Norsk-Buddy-Audio/Ha_det.mp3'}
+  ],
+  2: [
+    {en:'Please',no:'Vær så snill'},
+    {en:'Thank you',no:'Takk'}
+  ],
+  3: [
+    {en:'Water',no:'Vann'},
+    {en:'Food',no:'Mat'}
+  ],
+  4: [
+    {en:'One',no:'En'},
+    {en:'Two',no:'To'}
+  ],
+  slang: [
+    {en:'What’s up?',no:'Hva skjer?'},
+    {en:'Cool',no:'Kult'}
+  ]
 };
 
-document.getElementById("next-word").onclick = () => {
-  if (index < lesson.length - 1) {
+const images = [
+  'assets/images/norway1.jpg',
+  'assets/images/norway2.jpg',
+  'assets/images/norway3.jpg',
+  'assets/images/norway4.jpg',
+  'assets/images/norway5.jpg'
+];
+
+let currentLesson, index = 0;
+
+function setGoal() {
+  localStorage.setItem('goalSelected', 'true');
+  show('screen-home');
+}
+
+function show(id) {
+  document.querySelectorAll('[id^=screen]').forEach(s => s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
+
+function openLesson(id) {
+  currentLesson = lessons[id];
+  index = 0;
+  document.getElementById('lesson-preview').src =
+    images[Math.floor(Math.random()*images.length)];
+  show('screen-lesson');
+  showWord();
+}
+
+function showWord() {
+  const w = currentLesson[index];
+  document.getElementById('word-no').textContent = w.no;
+  document.getElementById('word-en').textContent = w.en;
+}
+
+function nextWord() {
+  if (index < currentLesson.length - 1) {
     index++;
     showWord();
   } else {
-    alert("Lesson complete! 🎉");
+    alert('Lesson complete!');
+    show('screen-home');
   }
-};
+}
 
-document.getElementById("play-audio").onclick = playAudio;
+function playAudio() {
+  const w = currentLesson[index];
+  if (!w.audio) return;
+  new Audio(w.audio).play();
+}
 
-document.getElementById("prev-top").onclick = () => {
-  document.getElementById("screen-lesson").classList.add("hidden");
-  document.getElementById("screen-home").classList.remove("hidden");
-};
+function goHome() {
+  show('screen-home');
+}
+
+if (localStorage.getItem('goalSelected')) {
+  show('screen-home');
+} else {
+  show('screen-goals');
+}
 </script>
 
 </body>
