@@ -1,327 +1,153 @@
-<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Norsk – Learn the Basics</title>
+<title>Norsk Buddy – Learn Norsk</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
-body { margin:0; font-family:system-ui,sans-serif; background:linear-gradient(135deg,#1cb0f6,#58cc02);}
-.app { max-width:480px; margin:auto; background:#fff; min-height:100vh; padding:20px; position:relative; text-align:center;}
-h1,h2,h3{text-align:center;}
-button{width:100%; padding:12px; margin:8px 0; font-size:16px; border:none; border-radius:10px; background:#58cc02; color:#fff; cursor:pointer;}
-button.secondary{background:#1cb0f6;}
-button.option{background:#eee;color:#333;}
-button.option.selected{background:#1cb0f6;color:#fff;}
-button.option.matched{background:#58cc02;color:#fff;}
-.hidden{display:none;}
-.card{background:#fafafa; border-radius:12px; padding:16px; margin:15px 0;}
-.match{display:flex; gap:10px;}
-.col{flex:1;}
-.small{font-size:12px; color:#666;}
-.mascot{width:100px; height:100px; margin:0 auto 10px; transition:all 0.5s ease;}
-#prev-top{position:absolute; top:10px; left:10px; width:120px;}
-#back-bottom{position:absolute; bottom:10px; left:10px; width:100px;}
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: linear-gradient(135deg, #1cb0f6, #58cc02);
+}
+
+.app {
+  max-width: 480px;
+  margin: auto;
+  background: #fff;
+  min-height: 100vh;
+  padding: 20px;
+  position: relative;
+  text-align: center;
+}
+
+h1, h2 {
+  margin-top: 10px;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  font-size: 16px;
+  border: none;
+  border-radius: 10px;
+  background: #58cc02;
+  color: #fff;
+  cursor: pointer;
+}
+
+button.secondary {
+  background: #1cb0f6;
+}
+
+.hidden {
+  display: none;
+}
+
+.card {
+  background: #fafafa;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 15px 0;
+}
+
+.mascot {
+  width: 110px;
+  height: auto;
+  margin: 0 auto 12px;
+}
+
+#prev-top {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: auto;
+  padding: 8px 14px;
+}
 </style>
 </head>
+
 <body>
 <div class="app">
-<h1>🇳🇴 Learn Norsk</h1>
-<img id="mascot" class="mascot" src="https://via.placeholder.com/100?text=😊" alt="Mascot">
 
-<!-- Goal Selection -->
-<div id="screen-goal">
-<h2>What are your ambitions for learning Norsk?</h2>
-<button class="goal-btn">Visiting Norway – basics</button>
-<button class="goal-btn">Curious about the language</button>
-<button class="goal-btn">Business fluency</button>
-<button class="goal-btn">Conversational fluency</button>
+<h1>🇳🇴 Norsk Buddy</h1>
+<img id="mascot" class="mascot" src="assets/mascots/mascot-man.png" alt="Mascot">
+
+<!-- Home -->
+<div id="screen-home">
+  <h2>Select a Lesson</h2>
+  <button id="start-lesson">Lesson 1: Greetings</button>
 </div>
 
-<!-- Journey Selection -->
-<div id="screen-journey" class="hidden">
-<h2>Journey 1: The Basics</h2>
-<button class="lesson-btn" data-lesson="1">Lesson 1: Greetings & Salutations</button>
-<button class="lesson-btn" data-lesson="2">Lesson 2: Common Courtesy</button>
-<button class="lesson-btn" data-lesson="3">Lesson 3: Simple Needs</button>
-<button class="lesson-btn" data-lesson="4">Lesson 4: Numbers & Places</button>
-<button class="lesson-btn" data-lesson="slang">Norwegian Slang</button>
-</div>
+<!-- Lesson -->
+<div id="screen-lesson" class="hidden">
+  <button id="prev-top">← Home</button>
 
-<!-- Vocabulary Screen -->
-<div id="screen-vocab" class="hidden">
-<button id="prev-top">Previous</button>
-<div class="card">
-<div class="small" id="hint"></div>
-<h2 id="word-no"></h2>
-<p><strong>English:</strong> <span id="word-en"></span></p>
-<button id="play-normal" class="secondary">🔊 Normal</button>
-<button id="play-slow" class="secondary">🐢 Slow</button>
-</div>
-<button id="next-word">Next</button>
-<button id="back-bottom">Back</button>
-</div>
-
-<!-- Match Screen -->
-<div id="screen-match" class="hidden">
-<button id="prev-top-match">Previous</button>
-<div class="match">
-<div class="col" id="en-col"></div>
-<div class="col" id="no-col"></div>
-</div>
-<button id="back-bottom-match">Back</button>
-</div>
-
-<!-- Score Screen -->
-<div id="screen-score" class="hidden">
-<h2>Lesson Complete 🎉</h2>
-<h3 id="score"></h3>
-<button id="restart-btn">Restart Level</button>
-<button id="next-chapter-btn">Next Chapter</button>
-<button id="home-btn">Home</button>
-</div>
-</div>
-
-<script>
-const lessons = {
-1: [{en:'Hello',no:'Hallo'},{en:'Goodbye',no:'Ha det'},{en:'Welcome',no:'Velkommen'},{en:'I',no:'Jeg'},{en:'How are you',no:'Hvordan har du det'},{en:'I am well',no:'Jeg har det bra'},{en:'My name is',no:'Jeg heter'},{en:'Norway',no:'Norge'},{en:'America',no:'Amerika'}],
-2: [{en:'Please',no:'Vær så snill'},{en:'Thank you',no:'Takk'},{en:'Yes',no:'Ja'},{en:'No',no:'Nei'}],
-3: [{en:'Water',no:'Vann'},{en:'Food',no:'Mat'},{en:'Bathroom',no:'Bad'},{en:'Help',no:'Hjelp'}],
-4: [{en:'One',no:'En'},{en:'Two',no:'To'},{en:'Three',no:'Tre'},{en:'Four',no:'Fire'}],
-'slang': [{en:'What\'s up',no:'Hva skjer?'},{en:'Friend',no:'Kamerat'},{en:'Cool',no:'Kult'},{en:'Chill',no:'Slapp av'}]
-};
-
-let currentLesson=1,index=0,selected=null,correct=0;
-const mascot = document.getElementById('mascot');
-const synth = window.speechSynthesis;
-
-function showScreen(id){document.querySelectorAll('[id^=screen]').forEach(s=>s.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');}
-
-// Goal selection
-document.querySelectorAll('.goal-btn').forEach(btn=>{
-  btn.addEventListener('click',()=>showScreen('screen-journey'));
-});
-
-// Lesson selection
-document.querySelectorAll('.lesson-btn').forEach(btn=>{
-  btn.addEventListener('click',()=>{ currentLesson=btn.dataset.lesson; index=0; correct=0; selected=null; showScreen('screen-vocab'); showWord(); });
-});
-
-// Vocab navigation
-document.getElementById('next-word').addEventListener('click',()=>{if(index+1<lessons[currentLesson].length){index++;showWord();}else{startMatch();}});
-document.getElementById('back-bottom').addEventListener('click',()=>{if(index>0){index--;showWord();}});
-document.getElementById('prev-top').addEventListener('click',()=>{showScreen('screen-journey');});
-
-document.getElementById('play-normal').addEventListener('click',()=>playAudio(1));
-document.getElementById('play-slow').addEventListener('click',()=>playAudio(0.6));
-
-function showWord(){
-  const w=lessons[currentLesson][index];
-  document.getElementById('word-no').innerText=w.no;
-  document.getElementById('word-en').innerText=w.en;
-  document.getElementById('hint').innerText='';
-}
-
-function playAudio(rate=1){
-  synth.cancel();
-  const w=lessons[currentLesson][index].no;
-  const utter=new SpeechSynthesisUtterance(w);
-  utter.lang='nb-NO';
-  utter.rate=rate;
-  synth.speak(utter);
-}
-
-// Match
-function startMatch(){
-  showScreen('screen-match');
-  const enCol=document.getElementById('en-col'); enCol.innerHTML='';
-  const noCol=document.getElementById('no-col'); noCol.innerHTML='';
-  const shuffled=[...lessons[currentLesson]].sort(()=>Math.random()-0.5);
-  lessons[currentLesson].forEach(w=>{
-    const b=document.createElement('button'); b.className='option'; b.innerText=w.en;
-    b.addEventListener('click',()=>{clearSel('en-col'); selected=w; b.classList.add('selected');});
-    enCol.appendChild(b);
-  });
-  shuffled.forEach(w=>{
-    const b=document.createElement('button'); b.className='option'; b.innerText=w.no;
-    b.addEventListener('click',()=>{ if(!selected) return; if(selected.no===w.no){correct++; mark(selected,w); playFeedback(true);} else {flashRed(b); playFeedback(false);} selected=null; if(correct===lessons[currentLesson].length) finishLesson(); });
-    noCol.appendChild(b);
-  });
-}
-
-function mark(en,no){
-  document.querySelectorAll('#en-col button').forEach(b=>{if(b.innerText===en.en)b.classList.add('matched');});
-  document.querySelectorAll('#no-col button').forEach(b=>{if(b.innerText===no.no)b.classList.add('matched');});
-}
-
-function flashRed(btn){ const orig=btn.style.background; btn.style.background='red'; setTimeout(()=>{btn.style.background=orig;},2000);}
-
-function playFeedback(isCorrect){
-  const beep=new Audio(isCorrect?'https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg':'https://actions.google.com/sounds/v1/cartoon/boing.ogg'); beep.play();
-  mascot.src=isCorrect?'https://via.placeholder.com/100/00FF00?text=😊':'https://via.placeholder.com/100/FF0000?text=😢';
-  setTimeout(()=>{mascot.src='https://via.placeholder.com/100?text=😐';},1000);
-}
-
-function finishLesson(){ showScreen('screen-score'); document.getElementById('score').innerText=`Accuracy: ${correct} / ${lessons[currentLesson].length}`;
-new Audio('https://actions.google.com/sounds/v1/cartoon/clang.ogg').play();}
-
-document.getElementById('restart-btn').addEventListener('click',()=>{startLesson(currentLesson); showScreen('screen-vocab');});
-document.getElementById('next-chapter-btn').addEventListener('click',()=>alert('Next chapter coming soon!'));
-document.getElementById('home-btn').addEventListener('click',()=>showScreen('screen-journey'));
-document.getElementById('prev-top-match').addEventListener('click',()=>showScreen('screen-journey'));
-document.getElementById('back-bottom-match').addEventListener('click',()=>startMatch());
-
-function clearSel(id){document.querySelectorAll(`#${id} button`).forEach(b=>b.classList.remove('selected'));}
-</script>
-</body>
-</html>
-
-
-=======
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Norsk Buddy</title>
-<style>
-  body { font-family: Arial, sans-serif; background-color: #f0f8ff; color: #333; margin: 0; padding: 0; }
-  .container { max-width: 600px; margin: 20px auto; padding: 20px; background: #fff; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);}
-  h1,h2 { text-align: center; }
-  .word { display: inline-block; margin: 10px; padding: 10px 15px; background-color: #add8e6; border-radius: 8px; cursor: pointer; }
-  .word.correct { background-color: #90ee90; }
-  .word.incorrect { background-color: #ff7f7f; }
-  .match-section { margin-top: 30px; text-align: center; }
-  .btn { margin: 10px; padding: 10px 20px; background-color: #6495ed; color: white; border: none; border-radius: 8px; cursor: pointer; }
-  .btn:hover { background-color: #4169e1; }
-  #score { font-size: 1.2em; font-weight: bold; text-align: center; margin-top: 20px; }
-  #mascot { display:block; margin: 0 auto 20px auto; width:150px; }
-</style>
-</head>
-<body>
-
-<div class="container">
-  <h1>Norsk Buddy</h1>
-  <img id="mascot" src="mascot.png" alt="Chibi Norwegian mascot">
-
-  <h2>Lesson 1: Greetings and Salutations</h2>
-
-  <div id="lesson">
-    <!-- Words Section -->
-    <div id="words">
-      <!-- Each word will have a button to play audio -->
-    </div>
-
-    <!-- Match Section -->
-    <div class="match-section">
-      <h3>Match English to Norwegian</h3>
-      <div id="english-words"></div>
-      <div id="norwegian-words"></div>
-    </div>
-
-    <div id="score"></div>
-
+  <div class="card">
+    <h2 id="word-no"></h2>
+    <p><strong>English:</strong> <span id="word-en"></span></p>
+    <button class="secondary" id="play-audio">🔊 Play Audio</button>
   </div>
+
+  <button id="next-word">Next</button>
+</div>
+
 </div>
 
 <script>
-// Words / phrases and their audio files
-const lessonData = [
-  { english: "Hello", norwegian: "Hei", audio: "Norsk-Buddy-Audio/Hello.mp3" },
-  { english: "Goodbye", norwegian: "Ha Det", audio: "Norsk-Buddy-Audio/Ha Det.mp3" },
-  { english: "Welcome", norwegian: "Velkommen", audio: "Norsk-Buddy-Audio/Velkommen.mp3" },
-  { english: "I", norwegian: "Jeg", audio: "Norsk-Buddy-Audio/Jeg.mp3" },
-  { english: "How are you", norwegian: "Hvordan har du det", audio: "Norsk-Buddy-Audio/Hvordan har du det.mp3" },
-  { english: "I am well", norwegian: "Jeg har det bra", audio: "Norsk-Buddy-Audio/Jeg har det bra.mp3" },
-  { english: "My name is", norwegian: "Mitt navn er", audio: "Norsk-Buddy-Audio/My name is.mp3" },
-  { english: "Norway", norwegian: "Norge", audio: "Norsk-Buddy-Audio/Norge.mp3" },
-  { english: "America", norwegian: "Amerika", audio: "Norsk-Buddy-Audio/America.mp3" }
+const lesson = [
+  { en: "Hello", no: "Hallo", audio: "Norsk-Buddy-Audio/Hallo.mp3" },
+  { en: "Goodbye", no: "Ha det", audio: "Norsk-Buddy-Audio/Ha_det.mp3" },
+  { en: "Welcome", no: "Velkommen", audio: "Norsk-Buddy-Audio/Velkommen.mp3" },
+  { en: "I", no: "Jeg", audio: "Norsk-Buddy-Audio/Jeg.mp3" },
+  { en: "How are you", no: "Hvordan har du det", audio: "Norsk-Buddy-Audio/Hvordan_har_du_det.mp3" },
+  { en: "I am well", no: "Jeg har det bra", audio: "Norsk-Buddy-Audio/Jeg_har_det_bra.mp3" },
+  { en: "My name is", no: "Jeg heter", audio: "Norsk-Buddy-Audio/Jeg_heter.mp3" },
+  { en: "Norway", no: "Norge", audio: "Norsk-Buddy-Audio/Norge.mp3" },
+  { en: "America", no: "Amerika", audio: "Norsk-Buddy-Audio/Amerika.mp3" }
 ];
 
-// Score tracking
-let score = 0;
-let totalMatches = lessonData.length;
+let index = 0;
 
-// Helper function to play audio
-function playAudio(file) {
-  const audio = new Audio(file);
+const mascot = document.getElementById("mascot");
+const wordNo = document.getElementById("word-no");
+const wordEn = document.getElementById("word-en");
+
+function showWord() {
+  wordNo.textContent = lesson[index].no;
+  wordEn.textContent = lesson[index].en;
+}
+
+function playAudio() {
+  const audio = new Audio(lesson[index].audio);
   audio.play();
 }
 
-// Build Words Section
-const wordsDiv = document.getElementById("words");
-lessonData.forEach(word => {
-  const btn = document.createElement("button");
-  btn.classList.add("word");
-  btn.innerText = word.norwegian;
-  btn.onclick = () => playAudio(word.audio);
-  wordsDiv.appendChild(btn);
-});
+document.getElementById("start-lesson").onclick = () => {
+  document.getElementById("screen-home").classList.add("hidden");
+  document.getElementById("screen-lesson").classList.remove("hidden");
+  index = 0;
+  showWord();
+};
 
-// Build Match Section
-const englishDiv = document.getElementById("english-words");
-const norwegianDiv = document.getElementById("norwegian-words");
-
-// Shuffle helper
-function shuffle(array) {
-  return array.sort(() => Math.random() - 0.5);
-}
-
-let englishShuffled = shuffle([...lessonData]);
-let norwegianShuffled = shuffle([...lessonData]);
-
-englishShuffled.forEach(word => {
-  const btn = document.createElement("button");
-  btn.classList.add("word");
-  btn.innerText = word.english;
-  btn.onclick = () => selectEnglish(word);
-  englishDiv.appendChild(btn);
-});
-
-norwegianShuffled.forEach(word => {
-  const btn = document.createElement("button");
-  btn.classList.add("word");
-  btn.innerText = word.norwegian;
-  btn.onclick = () => selectNorwegian(word, btn);
-  norwegianDiv.appendChild(btn);
-});
-
-let selectedEnglish = null;
-
-function selectEnglish(word) {
-  selectedEnglish = word;
-}
-
-function selectNorwegian(norWord, btn) {
-  if (!selectedEnglish) return;
-  if (selectedEnglish.norwegian === norWord.norwegian) {
-    btn.classList.add("correct");
-    playAudio("Norsk-Buddy-Audio/correct.mp3"); // add a short beep/chirp
-    score++;
-    checkCompletion();
+document.getElementById("next-word").onclick = () => {
+  if (index < lesson.length - 1) {
+    index++;
+    showWord();
   } else {
-    btn.classList.add("incorrect");
-    playAudio("Norsk-Buddy-Audio/incorrect.mp3");
-    setTimeout(() => btn.classList.remove("incorrect"), 2000);
+    alert("Lesson complete! 🎉");
   }
-  selectedEnglish = null;
-}
+};
 
-// Completion
-function checkCompletion() {
-  if (score === totalMatches) {
-    document.getElementById("score").innerText = `Lesson Complete! Score: ${score}/${totalMatches}`;
-    playAudio("Norsk-Buddy-Audio/celebration.mp3"); // celebratory audio
-  }
-}
+document.getElementById("play-audio").onclick = playAudio;
+
+document.getElementById("prev-top").onclick = () => {
+  document.getElementById("screen-lesson").classList.add("hidden");
+  document.getElementById("screen-home").classList.remove("hidden");
+};
 </script>
 
 </body>
 </html>
-<<<<<<< HEAD
->>>>>>> a4bf6df (Fresh start with Norsk Buddy app and audio)
-=======
-
->>>>>>> 8cdb011 (Update index.html)
-
-<!-- force pages rebuild -->
