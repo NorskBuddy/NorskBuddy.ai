@@ -4,95 +4,30 @@
 <meta charset="UTF-8">
 <title>Norsk Buddy</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
-body {
-  margin: 0;
-  font-family: system-ui, sans-serif;
-  background: linear-gradient(135deg, #1cb0f6, #58cc02);
-}
-
-.app {
-  max-width: 480px;
-  margin: auto;
-  background: #fff;
-  min-height: 100vh;
-  padding: 20px;
-  position: relative;
-}
-
-h1, h2 {
-  text-align: center;
-}
-
-.hidden { display: none; }
-
-button {
-  width: 100%;
-  padding: 12px;
-  margin: 8px 0;
-  font-size: 16px;
-  border: none;
-  border-radius: 12px;
-  background: #58cc02;
-  color: white;
-  cursor: pointer;
-}
-
-button.secondary { background: #1cb0f6; }
-
-.mascot {
-  width: 110px;
-  display: block;
-  margin: 10px auto;
-}
-
-.lesson-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
-  margin-top: 20px;
-}
-
-.lesson {
-  background: #f0f8ff;
-  border-radius: 16px;
-  padding: 16px;
-  text-align: center;
-  cursor: pointer;
-}
-
-.lesson img {
-  width: 60px;
-}
-
-.preview {
-  margin-top: 15px;
-  border-radius: 14px;
-  overflow: hidden;
-}
-
-.preview img {
-  width: 100%;
-}
-
-#prev {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  width: auto;
-  padding: 8px 14px;
-}
+body { margin:0; font-family:system-ui,sans-serif; background:linear-gradient(135deg,#1cb0f6,#58cc02); }
+.app { max-width:480px; margin:auto; background:#fff; min-height:100vh; padding:20px; position:relative; }
+h1,h2{text-align:center;}
+.hidden{display:none;}
+button{width:100%;padding:12px;margin:8px 0;font-size:16px;border:none;border-radius:12px;background:#58cc02;color:white;cursor:pointer;}
+button.secondary{background:#1cb0f6;}
+.mascot{width:110px;display:block;margin:10px auto;}
+.lesson-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:20px;}
+.lesson{background:#f0f8ff;border-radius:16px;padding:16px;text-align:center;cursor:pointer;}
+#prev{position:absolute;top:12px;left:12px;width:auto;padding:8px 14px;}
+.match{display:flex;gap:10px;}
+.col{flex:1;}
+.option{background:#eee;color:#333;margin:4px;padding:10px;border-radius:8px;cursor:pointer;}
+.option.selected{background:#1cb0f6;color:white;}
+.option.matched{background:#58cc02;color:white;}
 </style>
 </head>
-
 <body>
 <div class="app">
-
 <h1>🇳🇴 Norsk Buddy</h1>
 <img class="mascot" src="assets/mascots/mascot-man.png">
 
-<!-- GOAL SELECTION -->
+<!-- Goal Selection -->
 <div id="screen-goals" class="hidden">
   <h2>What are your ambitions for learning Norsk?</h2>
   <button onclick="setGoal()">Visiting Norway</button>
@@ -101,158 +36,171 @@ button.secondary { background: #1cb0f6; }
   <button onclick="setGoal()">Business fluency</button>
 </div>
 
-<!-- HOME -->
+<!-- Home Screen -->
 <div id="screen-home" class="hidden">
   <h2>Your Journey</h2>
-
-  <div class="lesson-grid">
-    <div class="lesson" onclick="openLesson(1)">
-      ⛰️<br>Greetings
-    </div>
-    <div class="lesson" onclick="openLesson(2)">
-      ⛰️<br>Courtesy
-    </div>
-    <div class="lesson" onclick="openLesson(3)">
-      ⛰️<br>Needs
-    </div>
-    <div class="lesson" onclick="openLesson(4)">
-      ⛰️<br>Numbers
-    </div>
-    <div class="lesson" onclick="openLesson('slang')">
-      ⛰️<br>Slang
-    </div>
-  </div>
-
-  <div class="preview">
-    <img id="lesson-preview" src="">
-  </div>
+  <div class="lesson-grid" id="lessonGrid"></div>
 </div>
 
-<!-- LESSON -->
+<!-- Lesson Screen -->
 <div id="screen-lesson" class="hidden">
   <button id="prev" onclick="goHome()">← Home</button>
-
   <h2 id="word-no"></h2>
   <p><strong>English:</strong> <span id="word-en"></span></p>
-
   <button class="secondary" onclick="playAudio()">🔊 Play</button>
   <button onclick="nextWord()">Next</button>
 </div>
 
+<!-- Match Screen -->
+<div id="screen-match" class="hidden">
+  <h2>Match the words</h2>
+  <div class="match">
+    <div class="col" id="en-col"></div>
+    <div class="col" id="no-col"></div>
+  </div>
 </div>
 
 <script>
+/* ======== LESSON DATA ======== */
 const lessons = {
   greetings: [
-    ['Hallo','Hello'],['Ha det','Goodbye']
+    ['Hallo','Hello'],['Ha det','Goodbye'],['Velkommen','Welcome'],['Jeg','I'],['Hvordan har du det','How are you'],['Jeg har det bra','I am well'],['Jeg heter','My name is'],['Norge','Norway'],['Amerika','America']
   ],
   courtesy: [
-    ['Vær så snill','Please'],['Takk','Thank you']
+    ['Vær så snill','Please'],['Takk','Thank you'],['Ja','Yes'],['Nei','No']
   ],
   needs: [
-    ['Vann','Water'],['Mat','Food']
+    ['Vann','Water'],['Mat','Food'],['Bad','Bathroom'],['Hjelp','Help']
   ],
   numbers: [
     ['En','One'],['To','Two'],['Tre','Three'],['Fire','Four'],['Fem','Five'],
     ['Seks','Six'],['Sju','Seven'],['Åtte','Eight'],['Ni','Nine'],['Ti','Ten']
   ],
   slang: [
-    ['Hva skjer','What’s up'],['Kult','Cool'],['Slapp av','Chill']
+    ['Hva skjer','What\'s up'],['Kamerat','Friend'],['Kult','Cool'],['Slapp av','Chill']
   ],
-
   whWords: [
     ['hvem','who'],['hva','what'],['hvor','where'],['hvorfor','why'],['når','when'],
     ['gikk','went'],['går','is going'],['vil gå','will go'],['har gått','has went'],
     ['hvem er','who is'],['hvem var','who was'],['hvem vil','who will'],
     ['hva er','what is'],['hva har','what has'],['hva vil','what will'],
-    ['hvor er','where is'],['hvor har','where has'],['hvor vil','where will'],
+    ['hva har','what have'],['hvor er','where is'],['hvor har','where has'],['hvor vil','where will'],
     ['når har','when has'],['når vil','when will'],['når er','when is'],
     ['hvorfor er det','why is'],['hvorfor har','why has'],['hvorfor vil','why will']
   ],
-
   colors: [
     ['rød','red'],['blå','blue'],['gul','yellow'],['guld','gold'],['lilla','purple'],
     ['rosa','pink'],['grøn','green'],['brun','brown'],['svart','black'],['hvit','white']
   ],
-
   professions: [
-    ['ingeniør','engineer'],['politi','police'],['politimann','policeman'],
-    ['politikvinne','policewoman'],['postbud','postman'],['kokk','chef'],
-    ['bygningsarbeider','construction worker'],['bussjåfør','bus driver'],['lærer','teacher']
+    ['ingeniør','engineer'],['politi','police'],['politimann','policeman'],['politikvinne','policewoman'],
+    ['postbud','postman'],['kokk','chef'],['bygningsarbeider','construction worker'],['bussjåfør','bus driver'],['lærer','teacher']
   ],
-
   feelings: [
-    ['følelse','feeling'],['følelser','feelings'],['føles','feels'],
-    ['vil føle','will feel'],['følte','felt'],
+    ['følelse','feeling'],['følelser','feelings'],['føles','feels'],['vil føle','will feel'],['følte','felt'],
     ['glad','happy'],['trist','sad'],['sint','mad'],['spennende','exciting']
   ],
-
   theirThere: [
     ['der','there'],['deres','their'],['de er','they are']
   ]
 };
 
-const images = [
-  'assets/images/norway1.jpg',
-  'assets/images/norway2.jpg',
-  'assets/images/norway3.jpg',
-  'assets/images/norway4.jpg',
-  'assets/images/norway5.jpg'
-];
-
-let currentLesson, index = 0;
-
-function setGoal() {
-  localStorage.setItem('goalSelected', 'true');
-  show('screen-home');
+/* ======== HOME GRID ======== */
+const lessonNames = {
+  greetings:'Greetings',courtesy:'Courtesy',needs:'Needs',numbers:'Numbers',slang:'Slang',
+  whWords:'Who / What / Where',colors:'Colors',professions:'Professions',feelings:'Feelings',theirThere:'Their / There'
+};
+const grid=document.getElementById('lessonGrid');
+for(let k in lessonNames){
+  const d=document.createElement('div');
+  d.className='lesson';
+  d.innerHTML='⛰️<br>'+lessonNames[k];
+  d.onclick=()=>startLesson(k);
+  grid.appendChild(d);
 }
 
-function show(id) {
-  document.querySelectorAll('[id^=screen]').forEach(s => s.classList.add('hidden'));
-  document.getElementById(id).classList.remove('hidden');
-}
+/* ======== STATE ======== */
+let sequence=[], index=0, lessonKey=null, selected=null, matched=0;
 
-function openLesson(id) {
-  currentLesson = lessons[id];
-  index = 0;
-  document.getElementById('lesson-preview').src =
-    images[Math.floor(Math.random()*images.length)];
+/* ======== GOAL SELECTION ======== */
+function setGoal(){ localStorage.setItem('goal','1'); show('screen-home'); }
+function show(id){document.querySelectorAll('[id^=screen]').forEach(s=>s.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');}
+
+/* ======== LESSON NAV ======== */
+function startLesson(key){
+  lessonKey=key;
+  index=0; matched=0;
+  sequence=buildSequence(lessons[key]);
   show('screen-lesson');
   showWord();
 }
 
-function showWord() {
-  const w = currentLesson[index];
-  document.getElementById('word-no').textContent = w.no;
-  document.getElementById('word-en').textContent = w.en;
-}
-
-function nextWord() {
-  if (index < currentLesson.length - 1) {
-    index++;
-    showWord();
-  } else {
-    alert('Lesson complete!');
-    show('screen-home');
+function buildSequence(arr){
+  let seq=[...arr];
+  let extras=[];
+  for(let i=0;i<seq.length;i++){
+    if(i>0 && Math.random()<0.4) extras.push(seq[i]);
   }
+  return shuffle([...seq,...extras]);
 }
 
-function playAudio() {
-  const w = currentLesson[index];
-  if (!w.audio) return;
-  new Audio(w.audio).play();
+function shuffle(a){return a.sort(()=>Math.random()-0.5);}
+
+function showWord(){
+  const w=sequence[index];
+  document.getElementById('word-no').textContent=w[0];
+  document.getElementById('word-en').textContent=w[1];
 }
 
-function goHome() {
-  show('screen-home');
+function nextWord(){
+  if(index<sequence.length-1){ index++; showWord(); }
+  else startMatch();
 }
 
-if (localStorage.getItem('goalSelected')) {
-  show('screen-home');
-} else {
-  show('screen-goals');
+function playAudio(){
+  const w=sequence[index];
+  const f='Norsk-Buddy-Audio/'+w[0]+'.mp3';
+  new Audio(f).play().catch(()=>{});
 }
+
+/* ======== MATCH QUIZ ======== */
+function startMatch(){
+  show('screen-match');
+  const en=document.getElementById('en-col');
+  const no=document.getElementById('no-col');
+  en.innerHTML=no.innerHTML=''; selected=null; matched=0;
+  const shuffled=shuffle([...lessons[lessonKey]]);
+  lessons[lessonKey].forEach(w=>{
+    const b=document.createElement('button');
+    b.className='option';
+    b.textContent=w[1];
+    b.onclick=()=>selectBtn(b,w);
+    en.appendChild(b);
+  });
+  shuffled.forEach(w=>{
+    const b=document.createElement('button');
+    b.className='option';
+    b.textContent=w[0];
+    b.onclick=()=>checkBtn(b,w);
+    no.appendChild(b);
+  });
+}
+
+function selectBtn(btn,w){ clear('en-col'); btn.classList.add('selected'); selected=w; }
+function checkBtn(btn,w){
+  if(!selected) return;
+  if(w[0]===selected[0]){
+    btn.classList.add('matched');
+    matched++;
+    if(matched===lessons[lessonKey].length){ alert('Lesson complete!'); goHome(); }
+  } else { btn.style.background='red'; setTimeout(()=>btn.style.background='',800); }
+  selected=null;
+}
+function clear(id){ document.querySelectorAll('#'+id+' .option').forEach(b=>b.classList.remove('selected')); }
+function goHome(){ show('screen-home'); }
+
+if(localStorage.getItem('goal')) show('screen-home'); else show('screen-goals');
 </script>
-
 </body>
 </html>
+
