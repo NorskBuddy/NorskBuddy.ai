@@ -5,202 +5,221 @@
 <title>Norsk Buddy</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body { margin:0; font-family:system-ui,sans-serif; background:linear-gradient(135deg,#1cb0f6,#58cc02); }
-.app { max-width:480px; margin:auto; background:#fff; min-height:100vh; padding:20px; position:relative; }
+body{margin:0;font-family:system-ui,sans-serif;background:linear-gradient(135deg,#1cb0f6,#58cc02);}
+.app{max-width:480px;margin:auto;background:#fff;min-height:100vh;padding:20px;position:relative;}
 h1,h2{text-align:center;}
 .hidden{display:none;}
 button{width:100%;padding:12px;margin:8px 0;font-size:16px;border:none;border-radius:12px;background:#58cc02;color:white;cursor:pointer;}
 button.secondary{background:#1cb0f6;}
-.mascot{width:110px;display:block;margin:10px auto;}
 .lesson-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:20px;}
 .lesson{background:#f0f8ff;border-radius:16px;padding:16px;text-align:center;cursor:pointer;}
 #prev{position:absolute;top:12px;left:12px;width:auto;padding:8px 14px;}
-.match{display:flex;gap:10px;}
-.col{flex:1;}
 .option{background:#eee;color:#333;margin:4px;padding:10px;border-radius:8px;cursor:pointer;}
 .option.selected{background:#1cb0f6;color:white;}
 .option.matched{background:#58cc02;color:white;}
+.example{background:#f9f9f9;padding:10px;border-radius:8px;margin-top:12px;font-size:14px;}
 </style>
 </head>
+
 <body>
 <div class="app">
 <h1>🇳🇴 Norsk Buddy</h1>
-<img class="mascot" src="assets/mascots/mascot-man.png">
 
-<!-- Goal Selection -->
-<div id="screen-goals" class="hidden">
-  <h2>What are your ambitions for learning Norsk?</h2>
-  <button onclick="setGoal()">Visiting Norway</button>
-  <button onclick="setGoal()">Curious about the language</button>
-  <button onclick="setGoal()">Conversational fluency</button>
-  <button onclick="setGoal()">Business fluency</button>
-</div>
-
-<!-- Home Screen -->
-<div id="screen-home" class="hidden">
+<!-- HOME -->
+<div id="screen-home">
   <h2>Your Journey</h2>
   <div class="lesson-grid" id="lessonGrid"></div>
+
+  <h2 style="margin-top:30px;">Practice</h2>
+  <button class="secondary" onclick="startWordPractice()">Word Practice</button>
+  <button class="secondary" onclick="show('screen-custom')">Custom Practice</button>
 </div>
 
-<!-- Lesson Screen -->
+<!-- LESSON -->
 <div id="screen-lesson" class="hidden">
   <button id="prev" onclick="goHome()">← Home</button>
   <h2 id="word-no"></h2>
   <p><strong>English:</strong> <span id="word-en"></span></p>
-  <button class="secondary" onclick="playAudio()">🔊 Play</button>
   <button onclick="nextWord()">Next</button>
+  <div id="examples"></div>
 </div>
 
-<!-- Match Screen -->
+<!-- MATCH -->
 <div id="screen-match" class="hidden">
   <h2>Match the words</h2>
-  <div class="match">
-    <div class="col" id="en-col"></div>
-    <div class="col" id="no-col"></div>
+  <div style="display:flex;gap:10px;">
+    <div id="en-col" style="flex:1;"></div>
+    <div id="no-col" style="flex:1;"></div>
   </div>
 </div>
 
+<!-- CUSTOM PRACTICE -->
+<div id="screen-custom" class="hidden">
+  <button id="prev" onclick="goHome()">← Home</button>
+  <h2>Select up to 10 words</h2>
+  <div id="customList"></div>
+  <button onclick="startCustomPractice()">Start Practice</button>
+</div>
+
 <script>
-/* ======== LESSON DATA ======== */
-const lessons = {
-  greetings: [
-    ['Hallo','Hello'],['Ha det','Goodbye'],['Velkommen','Welcome'],['Jeg','I'],['Hvordan har du det','How are you'],['Jeg har det bra','I am well'],['Jeg heter','My name is'],['Norge','Norway'],['Amerika','America']
-  ],
-  courtesy: [
-    ['Vær så snill','Please'],['Takk','Thank you'],['Ja','Yes'],['Nei','No']
-  ],
-  needs: [
-    ['Vann','Water'],['Mat','Food'],['Bad','Bathroom'],['Hjelp','Help']
-  ],
-  numbers: [
-    ['En','One'],['To','Two'],['Tre','Three'],['Fire','Four'],['Fem','Five'],
-    ['Seks','Six'],['Sju','Seven'],['Åtte','Eight'],['Ni','Nine'],['Ti','Ten']
-  ],
-  slang: [
-    ['Hva skjer','What\'s up'],['Kamerat','Friend'],['Kult','Cool'],['Slapp av','Chill']
-  ],
-  whWords: [
-    ['hvem','who'],['hva','what'],['hvor','where'],['hvorfor','why'],['når','when'],
-    ['gikk','went'],['går','is going'],['vil gå','will go'],['har gått','has went'],
-    ['hvem er','who is'],['hvem var','who was'],['hvem vil','who will'],
-    ['hva er','what is'],['hva har','what has'],['hva vil','what will'],
-    ['hva har','what have'],['hvor er','where is'],['hvor har','where has'],['hvor vil','where will'],
-    ['når har','when has'],['når vil','when will'],['når er','when is'],
-    ['hvorfor er det','why is'],['hvorfor har','why has'],['hvorfor vil','why will']
-  ],
-  colors: [
-    ['rød','red'],['blå','blue'],['gul','yellow'],['guld','gold'],['lilla','purple'],
-    ['rosa','pink'],['grøn','green'],['brun','brown'],['svart','black'],['hvit','white']
-  ],
-  professions: [
-    ['ingeniør','engineer'],['politi','police'],['politimann','policeman'],['politikvinne','policewoman'],
-    ['postbud','postman'],['kokk','chef'],['bygningsarbeider','construction worker'],['bussjåfør','bus driver'],['lærer','teacher']
-  ],
-  feelings: [
-    ['følelse','feeling'],['følelser','feelings'],['føles','feels'],['vil føle','will feel'],['følte','felt'],
-    ['glad','happy'],['trist','sad'],['sint','mad'],['spennende','exciting']
-  ],
-  theirThere: [
-    ['der','there'],['deres','their'],['de er','they are']
-  ]
+/* ================== LESSON DATA ================== */
+const lessons={
+greetings:[['Hallo','Hello'],['Ha det','Goodbye'],['Velkommen','Welcome']],
+courtesy:[['Takk','Thank you'],['Vær så snill','Please']],
+needs:[['Vann','Water'],['Mat','Food']],
+numbers:[['En','One'],['To','Two'],['Tre','Three']],
+slang:[['Hva skjer','What’s up']],
+whWords:[['hvem','who'],['hva','what']],
+colors:[['rød','red'],['blå','blue']],
+professions:[['lærer','teacher']],
+feelings:[['glad','happy']],
+theirThere:[['der','there'],['deres','their']],
+
+meMyselfI:{
+words:[
+['Meg','Me'],['Jeg','I'],['Du','You'],['Meg selv','Myself'],['Deg','Yourself'],
+['Mine','Mine'],['Din','Your'],['vår','our'],['vårt','ours'],['hennes','hers'],['hans','his']
+],
+examples:['Du og meg – You and me','Hans eller hennes – His or hers']
+},
+
+clothes:{
+words:[
+['klær','clothes'],['Sko','shoe'],['Bukser','pants'],['Lue','beanie'],['Hatt','hat'],
+['Briller','glasses'],['skjorte','shirt'],['t-skjorte','t-shirt'],['joggesko','sneakers'],
+['dress','suit'],['kjole','dress']
+],
+examples:['Skoene hennes er blå','Hatten hans er rød']
+},
+
+giveTake:{
+words:[
+['Gi','give'],['Ta','take'],['Tok','took'],['Tatt','taken'],['Ga','gave'],
+['Gitt','given'],['hadde gitt','had given']
+],
+examples:['Gi meg den luen','Ta det til henne']
+},
+
+lostFound:{
+words:[
+['mistet','lost'],['finne','find'],['funnet','found'],['borte','gone'],['har funnet','have found']
+],
+examples:['Den er borte','Jeg mistet den i går','Jeg fant det tidligere']
+},
+
+tech:{
+words:[
+['datamaskin','computer'],['telefon','telephone'],['smarttelefon','smartphone'],
+['TV-en','television'],['radio','radio'],['tablett','tablet'],['videospill','video game']
+],
+examples:['Jeg mistet telefonen min','Jeg hørte det på radioen','Jeg spiller et videospill']
+},
+
+reading:{
+words:[
+['bok','book'],['blad','magazine'],['avis','newspaper'],['brev','letter'],
+['rapport','report'],['undertekst','subtitle'],['tekstmelding','text message'],
+['leser','reading'],['lese','read'],['skrev','wrote'],['skriving','writing'],['skrevet','written']
+],
+examples:['Jeg leser en ny bok','Hun skrev en rapport for magasinet']
+}
 };
 
-/* ======== HOME GRID ======== */
-const lessonNames = {
-  greetings:'Greetings',courtesy:'Courtesy',needs:'Needs',numbers:'Numbers',slang:'Slang',
-  whWords:'Who / What / Where',colors:'Colors',professions:'Professions',feelings:'Feelings',theirThere:'Their / There'
+/* ================== HOME GRID ================== */
+const lessonNames={
+greetings:'Greetings',courtesy:'Courtesy',needs:'Needs',numbers:'Numbers',slang:'Slang',
+whWords:'Who / What',colors:'Colors',professions:'Professions',feelings:'Feelings',
+theirThere:'Their / There',meMyselfI:'Me, Myself, and I',clothes:'Things You Wear',
+giveTake:'Give and Take',lostFound:'Lost and Found',tech:'Everyday Tech',reading:'The Reading Rainbow'
 };
+
 const grid=document.getElementById('lessonGrid');
 for(let k in lessonNames){
-  const d=document.createElement('div');
-  d.className='lesson';
-  d.innerHTML='⛰️<br>'+lessonNames[k];
-  d.onclick=()=>startLesson(k);
-  grid.appendChild(d);
+const d=document.createElement('div');
+d.className='lesson';
+d.textContent=lessonNames[k];
+d.onclick=()=>startLesson(k);
+grid.appendChild(d);
 }
 
-/* ======== STATE ======== */
-let sequence=[], index=0, lessonKey=null, selected=null, matched=0;
+/* ================== STATE ================== */
+let seq=[],idx=0,current=null;
 
-/* ======== GOAL SELECTION ======== */
-function setGoal(){ localStorage.setItem('goal','1'); show('screen-home'); }
-function show(id){document.querySelectorAll('[id^=screen]').forEach(s=>s.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');}
-
-/* ======== LESSON NAV ======== */
-function startLesson(key){
-  lessonKey=key;
-  index=0; matched=0;
-  sequence=buildSequence(lessons[key]);
-  show('screen-lesson');
-  showWord();
+/* ================== NAV ================== */
+function show(id){
+document.querySelectorAll('[id^=screen]').forEach(s=>s.classList.add('hidden'));
+document.getElementById(id).classList.remove('hidden');
 }
+function goHome(){show('screen-home');}
 
-function buildSequence(arr){
-  let seq=[...arr];
-  let extras=[];
-  for(let i=0;i<seq.length;i++){
-    if(i>0 && Math.random()<0.4) extras.push(seq[i]);
-  }
-  return shuffle([...seq,...extras]);
+/* ================== LESSON ================== */
+function startLesson(k){
+current=k;idx=0;
+const l=lessons[k];
+seq=(l.words||l).slice();
+show('screen-lesson');
+showWord();
 }
-
-function shuffle(a){return a.sort(()=>Math.random()-0.5);}
 
 function showWord(){
-  const w=sequence[index];
-  document.getElementById('word-no').textContent=w[0];
-  document.getElementById('word-en').textContent=w[1];
+const w=seq[idx];
+document.getElementById('word-no').textContent=w[0];
+document.getElementById('word-en').textContent=w[1];
+const ex=document.getElementById('examples');
+ex.innerHTML='';
+const e=lessons[current].examples;
+if(e&&idx===seq.length-1){
+e.forEach(s=>ex.innerHTML+=`<div class="example">${s}</div>`);
+}
 }
 
 function nextWord(){
-  if(index<sequence.length-1){ index++; showWord(); }
-  else startMatch();
+idx<seq.length-1?showWord(++idx):startMatch();
 }
 
-function playAudio(){
-  const w=sequence[index];
-  const f='Norsk-Buddy-Audio/'+w[0]+'.mp3';
-  new Audio(f).play().catch(()=>{});
-}
-
-/* ======== MATCH QUIZ ======== */
+/* ================== MATCH ================== */
 function startMatch(){
-  show('screen-match');
-  const en=document.getElementById('en-col');
-  const no=document.getElementById('no-col');
-  en.innerHTML=no.innerHTML=''; selected=null; matched=0;
-  const shuffled=shuffle([...lessons[lessonKey]]);
-  lessons[lessonKey].forEach(w=>{
-    const b=document.createElement('button');
-    b.className='option';
-    b.textContent=w[1];
-    b.onclick=()=>selectBtn(b,w);
-    en.appendChild(b);
-  });
-  shuffled.forEach(w=>{
-    const b=document.createElement('button');
-    b.className='option';
-    b.textContent=w[0];
-    b.onclick=()=>checkBtn(b,w);
-    no.appendChild(b);
-  });
+show('screen-match');
+const en=document.getElementById('en-col');
+const no=document.getElementById('no-col');
+en.innerHTML=no.innerHTML='';
+const base=seq.slice();
+shuffle(base).forEach(w=>{
+const b=document.createElement('div');
+b.className='option';b.textContent=w[1];
+b.onclick=()=>select=w;
+en.appendChild(b);
+});
+shuffle(seq).forEach(w=>{
+const b=document.createElement('div');
+b.className='option';b.textContent=w[0];
+b.onclick=()=>alert(w[1]);
+no.appendChild(b);
+});
 }
 
-function selectBtn(btn,w){ clear('en-col'); btn.classList.add('selected'); selected=w; }
-function checkBtn(btn,w){
-  if(!selected) return;
-  if(w[0]===selected[0]){
-    btn.classList.add('matched');
-    matched++;
-    if(matched===lessons[lessonKey].length){ alert('Lesson complete!'); goHome(); }
-  } else { btn.style.background='red'; setTimeout(()=>btn.style.background='',800); }
-  selected=null;
+/* ================== PRACTICE ================== */
+function startWordPractice(){
+const all=[];
+Object.values(lessons).forEach(l=>{
+(l.words||l).forEach(w=>all.push(w));
+});
+seq=shuffle(all).slice(0,18);
+idx=0;current=null;
+show('screen-lesson');
+showWord();
 }
-function clear(id){ document.querySelectorAll('#'+id+' .option').forEach(b=>b.classList.remove('selected')); }
-function goHome(){ show('screen-home'); }
 
-if(localStorage.getItem('goal')) show('screen-home'); else show('screen-goals');
+/* ================== CUSTOM ================== */
+function startCustomPractice(){
+seq=shuffle(customSel).concat(shuffle(customSel));
+idx=0;show('screen-lesson');showWord();
+}
+
+/* ================== UTILS ================== */
+function shuffle(a){return a.sort(()=>Math.random()-0.5);}
 </script>
 </body>
 </html>
+
 
