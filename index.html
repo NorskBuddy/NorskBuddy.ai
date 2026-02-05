@@ -4,10 +4,9 @@
 <meta charset="UTF-8">
 <title>Norsk Buddy</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
 body{margin:0;font-family:system-ui,sans-serif;background:linear-gradient(135deg,#1cb0f6,#58cc02);}
-.app{max-width:480px;margin:auto;background:#fff;min-height:100vh;padding:20px;position:relative;}
+.app{max-width:480px;margin:auto;background:#fff;min-height:100vh;padding:20px;}
 h1,h2{text-align:center;}
 .hidden{display:none;}
 button{width:100%;padding:12px;margin:8px 0;font-size:16px;border:none;border-radius:12px;background:#58cc02;color:white;cursor:pointer;}
@@ -18,7 +17,6 @@ button.secondary{background:#1cb0f6;}
 .option.correct{background:#58cc02;color:white;}
 .option.wrong{background:#e74c3c;color:white;}
 input{width:100%;padding:10px;margin:6px 0;border-radius:8px;border:1px solid #ccc;}
-#prev{position:absolute;top:12px;left:12px;width:auto;}
 .score{text-align:center;font-weight:bold;margin:10px 0;}
 </style>
 </head>
@@ -34,12 +32,12 @@ input{width:100%;padding:10px;margin:6px 0;border-radius:8px;border:1px solid #c
 
   <h2 style="margin-top:30px;">Practice</h2>
   <button class="secondary" onclick="startWordPractice()">Word Practice</button>
-  <button class="secondary" onclick="showCustom()">Custom Practice</button>
+  <button class="secondary" onclick="showCustomPractice()">Custom Practice</button>
 </div>
 
 <!-- LESSON -->
 <div id="screen-lesson" class="hidden">
-  <button id="prev" onclick="goHome()">← Home</button>
+  <button onclick="goHome()">← Home</button>
   <h2 id="word-no"></h2>
   <p><strong>English:</strong> <span id="word-en"></span></p>
   <button onclick="nextWord()">Next</button>
@@ -47,6 +45,7 @@ input{width:100%;padding:10px;margin:6px 0;border-radius:8px;border:1px solid #c
 
 <!-- MATCH -->
 <div id="screen-match" class="hidden">
+  <button onclick="goHome()">← Home</button>
   <h2>Match the words</h2>
   <div class="score" id="scoreBox"></div>
   <div id="matchBox"></div>
@@ -54,7 +53,7 @@ input{width:100%;padding:10px;margin:6px 0;border-radius:8px;border:1px solid #c
 
 <!-- CUSTOM PRACTICE -->
 <div id="screen-custom" class="hidden">
-  <button id="prev" onclick="goHome()">← Home</button>
+  <button onclick="goHome()">← Home</button>
   <h2>Enter up to 10 English words</h2>
   <div id="customInputs"></div>
   <button onclick="startCustomPractice()">Start Practice</button>
@@ -67,34 +66,34 @@ homeSweetHome:{title:'Home Sweet Home',words:[
 ['hus','house'],['rom','room'],['dør','door'],['vindu','window'],['bord','table'],['stol','chair'],['seng','bed'],['kjøkken','kitchen']
 ]},
 foodMood:{title:'Food Mood',words:[
-['mat','food'],['brød','bread'],['vann','water'],['ost','cheese'],['fisk','fish'],['eple','apple'],['middag','dinner']
+['mat','food'],['brød','bread'],['vann','water'],['ost','cheese'],['fisk','fish'],['eple','apple']
 ]},
 outAndAbout:{title:'Out & About',words:[
-['gå','walk'],['reise','travel'],['butikk','store'],['vei','road'],['by','city'],['park','park']
+['gå','walk'],['reise','travel'],['butikk','store'],['vei','road'],['by','city']
 ]},
 weatherOrNot:{title:'Weather or Not',words:[
 ['sol','sun'],['regn','rain'],['snø','snow'],['vind','wind'],['kald','cold'],['varm','warm']
 ]},
 timeAfterTime:{title:'Time After Time',words:[
-['nå','now'],['i dag','today'],['i morgen','tomorrow'],['ofte','often'],['aldri','never'],['snart','soon']
+['nå','now'],['i dag','today'],['i morgen','tomorrow'],['ofte','often'],['aldri','never']
 ]},
 talkTheTalk:{title:'Talk the Talk',words:[
-['snakke','talk'],['si','say'],['spørre','ask'],['svare','answer'],['høre','hear'],['forstå','understand']
+['snakke','talk'],['si','say'],['spørre','ask'],['svare','answer'],['forstå','understand']
 ]}
 };
 
-/* ================= BUILD HOME ================= */
+/* ================= BUILD JOURNEY ================= */
 const grid=document.getElementById('lessonGrid');
-Object.keys(lessons).forEach(k=>{
-const d=document.createElement('div');
-d.className='lesson';
-d.textContent=lessons[k].title;
-d.onclick=()=>startLesson(k);
-grid.appendChild(d);
+Object.keys(lessons).forEach(key=>{
+const tile=document.createElement('div');
+tile.className='lesson';
+tile.textContent=lessons[key].title;
+tile.onclick=()=>startLesson(key);
+grid.appendChild(tile);
 });
 
 /* ================= STATE ================= */
-let seq=[],idx=0,score=0;
+let sequence=[],index=0,score=0;
 
 /* ================= NAV ================= */
 function show(id){
@@ -104,18 +103,18 @@ document.getElementById(id).classList.remove('hidden');
 function goHome(){show('screen-home');}
 
 /* ================= LESSON FLOW ================= */
-function startLesson(k){
-seq=[...lessons[k].words];
-idx=0;
+function startLesson(key){
+sequence=[...lessons[key].words];
+index=0;
 show('screen-lesson');
 showWord();
 }
 function showWord(){
-document.getElementById('word-no').textContent=seq[idx][0];
-document.getElementById('word-en').textContent=seq[idx][1];
+document.getElementById('word-no').textContent=sequence[index][0];
+document.getElementById('word-en').textContent=sequence[index][1];
 }
 function nextWord(){
-idx<seq.length-1?showWord(++idx):startMatch(seq);
+index<sequence.length-1?showWord(++index):startMatch(sequence);
 }
 
 /* ================= MATCH ================= */
@@ -125,7 +124,6 @@ show('screen-match');
 document.getElementById('scoreBox').textContent='Score: 0';
 buildMatch(words);
 }
-
 function buildMatch(words){
 const box=document.getElementById('matchBox');
 box.innerHTML='';
@@ -135,7 +133,7 @@ const b=document.createElement('button');
 b.className='option';
 b.textContent=w[1];
 b.onclick=()=>{
-b.className='option correct';
+b.classList.add('correct');
 score++;
 document.getElementById('scoreBox').textContent='Score: '+score;
 };
@@ -151,30 +149,36 @@ startMatch(all.sort(()=>Math.random()-0.5).slice(0,6));
 }
 
 /* ================= CUSTOM PRACTICE ================= */
-function showCustom(){
+function showCustomPractice(){
 show('screen-custom');
 const box=document.getElementById('customInputs');
 box.innerHTML='';
 for(let i=0;i<10;i++){
-const inp=document.createElement('input');
-inp.placeholder='English word (e.g. water)';
-box.appendChild(inp);
+const input=document.createElement('input');
+input.placeholder='English word (e.g. water)';
+box.appendChild(input);
 }
 }
 
 function startCustomPractice(){
 let all=[];
 Object.values(lessons).forEach(l=>all.push(...l.words));
-const map=new Map(all.map(w=>[w[1].toLowerCase(),w]));
+const lookup=new Map(all.map(w=>[w[1].toLowerCase(),w]));
+
 const inputs=[...document.querySelectorAll('#customInputs input')];
 let selected=[];
 inputs.forEach(i=>{
 const v=i.value.trim().toLowerCase();
-if(v && map.has(v) && !selected.includes(map.get(v))){
-selected.push(map.get(v));
+if(v && lookup.has(v) && !selected.includes(lookup.get(v))){
+selected.push(lookup.get(v));
 }
 });
-if(selected.length===0){alert('No valid words entered');return;}
+
+if(selected.length===0){
+alert('No valid words found in lessons.');
+return;
+}
+
 startMatch(selected);
 }
 </script>
