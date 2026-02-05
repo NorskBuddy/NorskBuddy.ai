@@ -13,11 +13,11 @@ button{width:100%;padding:12px;margin:8px 0;font-size:16px;border:none;border-ra
 button.secondary{background:#1cb0f6;}
 .lesson-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:20px;}
 .lesson{background:#f0f8ff;border-radius:16px;padding:16px;text-align:center;cursor:pointer;}
-.option{background:#eee;color:#333;margin:6px;padding:10px;border-radius:8px;cursor:pointer;}
+.option{background:#eee;margin:6px;padding:12px;border-radius:8px;cursor:pointer;}
 .option.correct{background:#58cc02;color:white;}
 .option.wrong{background:#e74c3c;color:white;}
 input{width:100%;padding:10px;margin:6px 0;border-radius:8px;border:1px solid #ccc;}
-.score{text-align:center;font-weight:bold;margin:10px 0;}
+#prev{margin-bottom:10px;}
 </style>
 </head>
 
@@ -32,28 +32,28 @@ input{width:100%;padding:10px;margin:6px 0;border-radius:8px;border:1px solid #c
 
   <h2 style="margin-top:30px;">Practice</h2>
   <button class="secondary" onclick="startWordPractice()">Word Practice</button>
-  <button class="secondary" onclick="showCustomPractice()">Custom Practice</button>
+  <button class="secondary" onclick="showCustom()">Custom Practice</button>
 </div>
 
 <!-- LESSON -->
 <div id="screen-lesson" class="hidden">
-  <button onclick="goHome()">← Home</button>
+  <button id="prev" onclick="goHome()">← Home</button>
   <h2 id="word-no"></h2>
   <p><strong>English:</strong> <span id="word-en"></span></p>
   <button onclick="nextWord()">Next</button>
+  <div id="examples"></div>
 </div>
 
-<!-- MATCH -->
+<!-- MATCH / PRACTICE -->
 <div id="screen-match" class="hidden">
-  <button onclick="goHome()">← Home</button>
-  <h2>Match the words</h2>
-  <div class="score" id="scoreBox"></div>
-  <div id="matchBox"></div>
+  <button id="prev" onclick="goHome()">← Home</button>
+  <h2 id="prompt"></h2>
+  <div id="options"></div>
 </div>
 
-<!-- CUSTOM PRACTICE -->
+<!-- CUSTOM INPUT -->
 <div id="screen-custom" class="hidden">
-  <button onclick="goHome()">← Home</button>
+  <button id="prev" onclick="goHome()">← Home</button>
   <h2>Enter up to 10 English words</h2>
   <div id="customInputs"></div>
   <button onclick="startCustomPractice()">Start Practice</button>
@@ -61,128 +61,175 @@ input{width:100%;padding:10px;margin:6px 0;border-radius:8px;border:1px solid #c
 
 <script>
 /* ================= LESSON DATA ================= */
-const lessons={
-homeSweetHome:{title:'Home Sweet Home',words:[
-['hus','house'],['rom','room'],['dør','door'],['vindu','window'],['bord','table'],['stol','chair'],['seng','bed'],['kjøkken','kitchen']
-]},
-foodMood:{title:'Food Mood',words:[
-['mat','food'],['brød','bread'],['vann','water'],['ost','cheese'],['fisk','fish'],['eple','apple']
-]},
-outAndAbout:{title:'Out & About',words:[
-['gå','walk'],['reise','travel'],['butikk','store'],['vei','road'],['by','city']
-]},
-weatherOrNot:{title:'Weather or Not',words:[
-['sol','sun'],['regn','rain'],['snø','snow'],['vind','wind'],['kald','cold'],['varm','warm']
-]},
-timeAfterTime:{title:'Time After Time',words:[
-['nå','now'],['i dag','today'],['i morgen','tomorrow'],['ofte','often'],['aldri','never']
-]},
-talkTheTalk:{title:'Talk the Talk',words:[
-['snakke','talk'],['si','say'],['spørre','ask'],['svare','answer'],['forstå','understand']
-]}
+const lessons = {
+  meMyselfI:{title:"Me, Myself, and I",words:[
+    ["Meg","Me"],["Jeg","I"],["Du","You"],["Meg selv","Myself"],["Deg","Yourself"],
+    ["Mine","Mine"],["Din","Your"],["vår","our"],["vårt","ours"],["hennes","hers"],["hans","his"]
+  ],examples:["Du og meg – You and me","Hans eller hennes – His or hers"]},
+
+  clothes:{title:"Things You Wear",words:[
+    ["klær","clothes"],["Sko","shoe"],["Bukser","pants"],["Lue","beanie"],["Hatt","hat"],
+    ["Briller","glasses"],["skjorte","shirt"],["t-skjorte","t-shirt"],
+    ["joggesko","sneakers"],["dress","suit"],["kjole","dress"]
+  ],examples:["Skoene hennes er blå","Hatten hans er rød"]},
+
+  giveTake:{title:"Give and Take",words:[
+    ["Gi","give"],["Ta","take"],["Tok","took"],["Tatt","taken"],["Ga","gave"],
+    ["Gitt","given"],["hadde gitt","had given"]
+  ],examples:["Gi meg den luen","Ta det til henne"]},
+
+  lostFound:{title:"Lost and Found",words:[
+    ["mistet","lost"],["finne","find"],["funnet","found"],["taper","losing"],
+    ["borte","gone"],["har funnet","have found"]
+  ],examples:["Den er borte","Jeg mistet den i går","Jeg fant det tidligere"]},
+
+  tech:{title:"Everyday Tech",words:[
+    ["datamaskin","computer"],["telefon","telephone"],["smarttelefon","smartphone"],
+    ["TV-en","television"],["radio","radio"],["tablett","tablet"],["videospill","video game"]
+  ],examples:["Jeg mistet telefonen min","Jeg hørte det på radioen","Jeg spiller et videospill"]},
+
+  reading:{title:"The Reading Rainbow",words:[
+    ["bok","book"],["blad","magazine"],["avis","newspaper"],["brev","letter"],
+    ["rapport","report"],["undertekst","subtitle"],["tekstmelding","text message"],
+    ["leser","reading"],["lese","read"],["skrev","wrote"],["skriving","writing"],["skrevet","written"]
+  ],examples:["Jeg leser en ny bok","Hun skrev en rapport for magasinet"]},
+
+  whWords:{title:"Who, What, Why, and Where",words:[
+    ["hvem","who"],["hva","what"],["hvor","where"],["hvorfor","why"],["når","when"],
+    ["gikk","went"],["går","is going"],["vil gå","will go"],["har gått","has went"]
+  ],examples:[]},
+
+  colors:{title:"Colors",words:[
+    ["rød","red"],["blå","blue"],["gul","yellow"],["guld","gold"],["lilla","purple"],
+    ["rosa","pink"],["grøn","green"],["brun","brown"],["svart","black"],["hvit","white"]
+  ],examples:[]},
+
+  professions:{title:"Professions",words:[
+    ["ingeniør","engineer"],["politi","police"],["politimann","policeman"],
+    ["politikvinne","policewoman"],["postbud","postman"],
+    ["kokk","chef"],["bygningsarbeider","construction worker"],
+    ["bussjåfør","bus driver"],["lærer","teacher"]
+  ],examples:[]},
+
+  feelings:{title:"Feelings",words:[
+    ["følelse","feeling"],["følelser","feelings"],["føles","feels"],
+    ["vil føle","will feel"],["følte","felt"],
+    ["glad","happy"],["trist","sad"],["sint","mad"],["spennende","exciting"]
+  ],examples:[]},
+
+  numbers:{title:"Numbers",words:[
+    ["en","one"],["to","two"],["tre","three"],["fire","four"],["fem","five"],
+    ["seks","six"],["sju","seven"],["åtte","eight"],["ni","nine"],["ti","ten"]
+  ],examples:[]},
+
+  theirThere:{title:"Their / There / They're",words:[
+    ["der","there"],["deres","their"],["de er","they are"]
+  ],examples:[]}
 };
 
-/* ================= BUILD JOURNEY ================= */
-const grid=document.getElementById('lessonGrid');
-Object.keys(lessons).forEach(key=>{
-const tile=document.createElement('div');
-tile.className='lesson';
-tile.textContent=lessons[key].title;
-tile.onclick=()=>startLesson(key);
-grid.appendChild(tile);
+/* ================= BUILD HOME ================= */
+const grid=document.getElementById("lessonGrid");
+Object.keys(lessons).forEach(k=>{
+  const d=document.createElement("div");
+  d.className="lesson";
+  d.textContent=lessons[k].title;
+  d.onclick=()=>startLesson(k);
+  grid.appendChild(d);
 });
 
 /* ================= STATE ================= */
-let sequence=[],index=0,score=0;
+let seq=[],idx=0,practiceSeq=[],practiceIdx=0;
 
 /* ================= NAV ================= */
 function show(id){
-document.querySelectorAll('[id^=screen]').forEach(s=>s.classList.add('hidden'));
-document.getElementById(id).classList.remove('hidden');
+  document.querySelectorAll("[id^=screen]").forEach(s=>s.classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
 }
-function goHome(){show('screen-home');}
+function goHome(){show("screen-home");}
 
-/* ================= LESSON FLOW ================= */
-function startLesson(key){
-sequence=[...lessons[key].words];
-index=0;
-show('screen-lesson');
-showWord();
+/* ================= LESSON ================= */
+function startLesson(k){
+  seq=[...lessons[k].words];
+  idx=0;
+  show("screen-lesson");
+  showWord();
 }
 function showWord(){
-document.getElementById('word-no').textContent=sequence[index][0];
-document.getElementById('word-en').textContent=sequence[index][1];
+  document.getElementById("word-no").textContent=seq[idx][0];
+  document.getElementById("word-en").textContent=seq[idx][1];
 }
 function nextWord(){
-index<sequence.length-1?showWord(++index):startMatch(sequence);
-}
-
-/* ================= MATCH ================= */
-function startMatch(words){
-score=0;
-show('screen-match');
-document.getElementById('scoreBox').textContent='Score: 0';
-buildMatch(words);
-}
-function buildMatch(words){
-const box=document.getElementById('matchBox');
-box.innerHTML='';
-const shuffled=[...words].sort(()=>Math.random()-0.5);
-shuffled.forEach(w=>{
-const b=document.createElement('button');
-b.className='option';
-b.textContent=w[1];
-b.onclick=()=>{
-b.classList.add('correct');
-score++;
-document.getElementById('scoreBox').textContent='Score: '+score;
-};
-box.appendChild(b);
-});
-}
-
-/* ================= WORD PRACTICE ================= */
-function startWordPractice(){
-let all=[];
-Object.values(lessons).forEach(l=>all.push(...l.words));
-startMatch(all.sort(()=>Math.random()-0.5).slice(0,6));
+  idx<seq.length-1?showWord(++idx):goHome();
 }
 
 /* ================= CUSTOM PRACTICE ================= */
-function showCustomPractice(){
-show('screen-custom');
-const box=document.getElementById('customInputs');
-box.innerHTML='';
-for(let i=0;i<10;i++){
-const input=document.createElement('input');
-input.placeholder='English word (e.g. water)';
-box.appendChild(input);
-}
+function showCustom(){
+  show("screen-custom");
+  const box=document.getElementById("customInputs");
+  box.innerHTML="";
+  for(let i=0;i<10;i++){
+    const inp=document.createElement("input");
+    inp.placeholder="English word (e.g. water)";
+    box.appendChild(inp);
+  }
 }
 
 function startCustomPractice(){
-let all=[];
-Object.values(lessons).forEach(l=>all.push(...l.words));
-const lookup=new Map(all.map(w=>[w[1].toLowerCase(),w]));
+  let all=[];
+  Object.values(lessons).forEach(l=>all.push(...l.words));
+  const lookup=new Map(all.map(w=>[w[1].toLowerCase(),w]));
 
-const inputs=[...document.querySelectorAll('#customInputs input')];
-let selected=[];
-inputs.forEach(i=>{
-const v=i.value.trim().toLowerCase();
-if(v && lookup.has(v) && !selected.includes(lookup.get(v))){
-selected.push(lookup.get(v));
+  const inputs=[...document.querySelectorAll("#customInputs input")];
+  practiceSeq=[];
+  inputs.forEach(i=>{
+    const v=i.value.trim().toLowerCase();
+    if(v && lookup.has(v) && !practiceSeq.includes(lookup.get(v))){
+      practiceSeq.push(lookup.get(v));
+    }
+  });
+
+  if(practiceSeq.length===0){
+    alert("No valid words entered.");
+    return;
+  }
+
+  practiceIdx=0;
+  showPracticeWord();
 }
-});
 
-if(selected.length===0){
-alert('No valid words found in lessons.');
-return;
-}
+function showPracticeWord(){
+  show("screen-match");
+  const current=practiceSeq[practiceIdx];
+  document.getElementById("prompt").textContent=`Select the Norsk word for: "${current[1]}"`;
 
-startMatch(selected);
+  const opts=[current];
+  let pool=[];
+  Object.values(lessons).forEach(l=>pool.push(...l.words));
+  pool=pool.filter(w=>w!==current).sort(()=>Math.random()-0.5);
+  opts.push(pool[0],pool[1]);
+  opts.sort(()=>Math.random()-0.5);
+
+  const box=document.getElementById("options");
+  box.innerHTML="";
+  opts.forEach(o=>{
+    const b=document.createElement("div");
+    b.className="option";
+    b.textContent=o[0];
+    b.onclick=()=>{
+      if(o===current){
+        practiceIdx++;
+        practiceIdx<practiceSeq.length?showPracticeWord():goHome();
+      }else{
+        box.innerHTML="";
+        showPracticeWord();
+      }
+    };
+    box.appendChild(b);
+  });
 }
 </script>
 </body>
 </html>
+
 
 
