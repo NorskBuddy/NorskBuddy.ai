@@ -1,262 +1,350 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
 <title>Norsk Buddy</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-:root {
-  --bg: #0f172a;
-  --panel: #111827;
-  --card: #1f2933;
-  --accent: #38bdf8;
-  --text: #e5e7eb;
-  --muted: #9ca3af;
-}
-
-body.jp {
-  --bg: #120a18;
-  --panel: #1b1024;
-  --card: #241433;
-  --accent: #f472b6;
-  --text: #fde8f3;
-  --muted: #d1b3c4;
-}
-
 body {
-  margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  background: var(--bg);
-  color: var(--text);
+  margin:0;
+  font-family:system-ui,sans-serif;
+  background:linear-gradient(135deg,#1cb0f6,#58cc02);
 }
-
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
-  background: var(--panel);
+body.jp {
+  background:linear-gradient(135deg,#f472b6,#fb7185);
 }
-
-#langToggle {
-  display: flex;
-  gap: 12px;
+.app {
+  max-width:480px;
+  margin:auto;
+  background:#fff;
+  min-height:100vh;
+  padding:20px;
 }
+h1,h2,h3 { text-align:center; }
 
-.flag {
-  font-size: 26px;
-  cursor: pointer;
-  opacity: 0.4;
-  transition: transform 0.15s, opacity 0.15s;
+.lang-toggle {
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  margin-bottom:8px;
+  font-size:28px;
+  cursor:pointer;
 }
-
-.flag.active {
-  opacity: 1;
-  transform: scale(1.1);
+.lang-toggle span {
+  opacity:.4;
 }
-
-main {
-  padding: 16px;
+.lang-toggle .active {
+  opacity:1;
 }
 
 .section {
-  background: var(--panel);
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 16px;
+  background:#f0f8ff;
+  border-radius:16px;
+  padding:14px;
+  margin-top:16px;
+}
+body.jp .section {
+  background:#fff1f5;
 }
 
+.section-header {
+  font-size:18px;
+  font-weight:bold;
+  cursor:pointer;
+}
+.hidden { display:none; }
+
+.lesson-grid {
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin-top:12px;
+}
 .lesson {
-  background: var(--card);
-  border-radius: 10px;
-  padding: 12px;
-  margin-top: 10px;
-}
-
-.word {
-  cursor: pointer;
-  border-bottom: 1px dotted var(--accent);
-}
-
-.word:hover {
-  color: var(--accent);
+  background:#fff;
+  border-radius:12px;
+  padding:14px;
+  text-align:center;
+  cursor:pointer;
+  box-shadow:0 2px 4px rgba(0,0,0,.1);
 }
 
 .bubbles {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:16px;
 }
-
 .bubble {
-  padding: 6px 10px;
-  background: var(--panel);
-  border-radius: 999px;
-  cursor: pointer;
-  user-select: none;
+  background:#e0e0e0;
+  padding:8px 12px;
+  border-radius:20px;
+  cursor:pointer;
+}
+.bubble.selected { background:#58cc02; color:#fff; }
+body.jp .bubble.selected { background:#ec4899; }
+.bubble.wrong { background:#ff6b6b; color:#fff; }
+
+.answer-line {
+  min-height:40px;
+  border-bottom:2px solid #ccc;
+  margin-top:12px;
+  padding:6px;
 }
 
-.bubble.selected {
-  background: var(--accent);
-  color: #000;
+.stats {
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:10px;
+  font-size:14px;
 }
-
-.feedback-wrong {
-  animation: shake 0.25s;
-  background: #7f1d1d !important;
+.correct-flash {
+  animation: flashGreen .4s;
 }
-
-@keyframes shake {
-  0% { transform: translateX(0); }
-  25% { transform: translateX(-3px); }
-  50% { transform: translateX(3px); }
-  75% { transform: translateX(-3px); }
-  100% { transform: translateX(0); }
+@keyframes flashGreen {
+  from { background:#d4ffd4; }
+  to { background:transparent; }
 }
 </style>
 </head>
 
 <body>
-<header>
-  <strong>Norsk Buddy</strong>
-  <div id="langToggle">
-    <span class="flag active" data-lang="no">🇳🇴</span>
-    <span class="flag" data-lang="jp">🇯🇵</span>
-  </div>
-</header>
+<div class="app">
 
-<main id="app"></main>
+<div class="lang-toggle">
+  <span id="flagNO" class="active">🇳🇴</span>
+  <span id="flagJP">🇯🇵</span>
+</div>
+
+<h1 id="title">Norsk Buddy</h1>
+
+<div class="stats">
+  <div>🔥 Streak: <span id="streak">0</span></div>
+  <div>⭐ XP: <span id="xp">0</span> (Lv <span id="level">1</span>)</div>
+</div>
+
+<div id="home">
+
+  <div class="section">
+    <div class="section-header" onclick="toggle('sec1')">Section 1 – The Basics</div>
+    <div id="sec1" class="hidden"><div class="lesson-grid" id="sec1grid"></div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-header" onclick="toggle('sec2')">Section 2 – Building Confidence</div>
+    <div id="sec2" class="hidden"><div class="lesson-grid" id="sec2grid"></div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-header" onclick="toggle('sec3')">Section 3 – Everyday Fluency</div>
+    <div id="sec3" class="hidden"><div class="lesson-grid" id="sec3grid"></div></div>
+  </div>
+
+</div>
+
+<div id="lessonView" class="hidden">
+  <button onclick="goHome()">← Back</button>
+  <h2 id="lessonTitle"></h2>
+  <p id="example"></p>
+  <button onclick="playAudio()">🔊 Play Audio</button>
+
+  <div class="answer-line" id="answerLine"></div>
+  <div class="bubbles" id="bubbles"></div>
+</div>
+
+</div>
 
 <script>
-/* ======================================================
-   LANGUAGE STATE
-====================================================== */
+/* ---------------- LANGUAGE STATE ---------------- */
+
 let currentLang = "no";
+let audioFolder = "Norsk-Buddy-Audio";
+let speechLang = "no-NO";
 
-const AUDIO_PATHS = {
-  no: "Norsk-Buddy-Audio/",
-  jp: "Norsk-Buddy-Audio-Japan/"
+/* ---------------- LESSON DATA ---------------- */
+
+const lessonsNO = {
+  sec1: [
+    {title:"Who, What, Why, and Where", sentence:"Hvem er du", translation:"Who are you"},
+    {title:"Colors", sentence:"Hatten hans er rød", translation:"His hat is red"},
+    {title:"Professions", sentence:"Hun er lærer", translation:"She is a teacher"}
+  ],
+  sec2: Array.from({length:20},(_,i)=>({
+    title:`Everyday Life ${i+1}`,
+    sentence:"Jeg jobber i dag",
+    translation:"I am working today"
+  })),
+  sec3: Array.from({length:20},(_,i)=>({
+    title:`Daily Stories ${i+1}`,
+    sentence:"Jeg ser filmen",
+    translation:"I am watching the movie"
+  }))
 };
 
-/* ======================================================
-   LESSON DATA (STRUCTURE UNCHANGED)
-   Japanese mirrors Norwegian lessons exactly
-====================================================== */
-const LESSONS = {
-  no: {
-    sections: [
-      {
-        title: "Section 1 – The Basics",
-        lessons: [
-          {
-            title: "Who, What, Why, and Where",
-            words: [
-              { word: "hvem", en: "who", example: "Hvem er du?" },
-              { word: "hva", en: "what", example: "Hva gjør du?" },
-              { word: "hvor", en: "where", example: "Hvor bor du?" },
-              { word: "hvorfor", en: "why", example: "Hvorfor er du her?" },
-              { word: "når", en: "when", example: "Når kommer du?" }
-            ]
-          }
-        ]
-      }
-    ]
-  },
+const lessonsJP = {
+  sec1: lessonsNO.sec1.map(l=>({
+    title:l.title,
+    sentence:{
+      "Hvem er du":"あなたは誰ですか",
+      "Hatten hans er rød":"彼の帽子は赤いです",
+      "Hun er lærer":"彼女は先生です"
+    }[l.sentence],
+    translation:l.translation
+  })),
+  sec2: lessonsNO.sec2.map(l=>({
+    title:l.title,
+    sentence:"私は今日働いています",
+    translation:l.translation
+  })),
+  sec3: lessonsNO.sec3.map(l=>({
+    title:l.title,
+    sentence:"私は映画を見ています",
+    translation:l.translation
+  }))
+};
 
-  jp: {
-    sections: [
-      {
-        title: "Section 1 – 基本 (The Basics)",
-        lessons: [
-          {
-            title: "Who, What, Why, and Where",
-            words: [
-              { word: "誰", romaji: "dare", en: "who", example: "誰ですか？" },
-              { word: "何", romaji: "nani", en: "what", example: "何をしますか？" },
-              { word: "どこ", romaji: "doko", en: "where", example: "どこに住んでいますか？" },
-              { word: "なぜ", romaji: "naze", en: "why", example: "なぜここにいますか？" },
-              { word: "いつ", romaji: "itsu", en: "when", example: "いつ来ますか？" }
-            ]
-          }
-        ]
-      }
-    ]
+let lessons = lessonsNO;
+
+/* ---------------- STATE ---------------- */
+
+let xp=0, streak=0, level=1;
+let current=null;
+let selected=[];
+
+/* ---------------- BUILD ---------------- */
+
+function buildAll(){
+  ["sec1","sec2","sec3"].forEach(sec=>{
+    document.getElementById(sec+"grid").innerHTML="";
+    lessons[sec].forEach((l,i)=>{
+      const d=document.createElement("div");
+      d.className="lesson";
+      d.textContent=l.title;
+      d.onclick=()=>startLesson(sec,i);
+      document.getElementById(sec+"grid").appendChild(d);
+    });
+  });
+}
+
+/* ---------------- LESSON FLOW ---------------- */
+
+function startLesson(sec,i){
+  current=lessons[sec][i];
+  document.getElementById("lessonTitle").textContent=current.title;
+  document.getElementById("example").textContent=current.sentence;
+  selected=[];
+  renderBubbles();
+  showLesson();
+}
+
+function renderBubbles(){
+  const words=current.translation.split(" ");
+  const pool=[...words];
+  while(pool.length<words.length+3) pool.push(randomWord());
+  shuffle(pool);
+
+  const b=document.getElementById("bubbles");
+  const a=document.getElementById("answerLine");
+  b.innerHTML=""; a.innerHTML="";
+
+  pool.forEach(w=>{
+    const s=document.createElement("span");
+    s.className="bubble";
+    s.textContent=w;
+    s.onclick=()=>toggleWord(s,w);
+    b.appendChild(s);
+  });
+}
+
+function toggleWord(el,w){
+  if(el.classList.contains("selected")){
+    el.classList.remove("selected","wrong");
+    selected=selected.filter(x=>x!==w);
+  } else {
+    el.classList.add("selected");
+    selected.push(w);
   }
+  document.getElementById("answerLine").textContent=selected.join(" ");
+  checkAnswer();
+}
+
+function checkAnswer(){
+  if(selected.join(" ")===current.translation){
+    gainXP();
+    setTimeout(goHome,600);
+  }
+}
+
+/* ---------------- AUDIO ---------------- */
+
+function playAudio(){
+  const u=new SpeechSynthesisUtterance(current.sentence);
+  u.lang=speechLang;
+  speechSynthesis.speak(u);
+}
+
+/* ---------------- XP ---------------- */
+
+function gainXP(){
+  xp+=10;
+  if(xp%100===0) level++;
+  streak++;
+  updateStats();
+}
+function updateStats(){
+  xpEl.textContent=xp;
+  levelEl.textContent=level;
+  streakEl.textContent=streak;
+}
+
+/* ---------------- UTIL ---------------- */
+
+function randomWord(){
+  const words=["I","you","he","she","we","they","am","are","is"];
+  return words[Math.floor(Math.random()*words.length)];
+}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}}
+function toggle(id){document.getElementById(id).classList.toggle("hidden")}
+function showLesson(){
+  home.classList.add("hidden");
+  lessonView.classList.remove("hidden");
+}
+function goHome(){
+  home.classList.remove("hidden");
+  lessonView.classList.add("hidden");
+}
+
+/* ---------------- TOGGLE ---------------- */
+
+flagNO.onclick=()=>{
+  currentLang="no";
+  lessons=lessonsNO;
+  audioFolder="Norsk-Buddy-Audio";
+  speechLang="no-NO";
+  document.body.classList.remove("jp");
+  title.textContent="Norsk Buddy";
+  flagNO.classList.add("active");
+  flagJP.classList.remove("active");
+  buildAll();
 };
 
-/* ======================================================
-   RENDERING
-====================================================== */
-function renderApp() {
-  const app = document.getElementById("app");
-  app.innerHTML = "";
+flagJP.onclick=()=>{
+  currentLang="jp";
+  lessons=lessonsJP;
+  audioFolder="Norsk-Buddy-Audio-Japan";
+  speechLang="ja-JP";
+  document.body.classList.add("jp");
+  title.textContent="日本語 Buddy";
+  flagJP.classList.add("active");
+  flagNO.classList.remove("active");
+  buildAll();
+};
 
-  const data = LESSONS[currentLang];
+/* ---------------- INIT ---------------- */
 
-  data.sections.forEach(section => {
-    const sec = document.createElement("div");
-    sec.className = "section";
-    sec.innerHTML = `<h2>${section.title}</h2>`;
-
-    section.lessons.forEach(lesson => {
-      const les = document.createElement("div");
-      les.className = "lesson";
-      les.innerHTML = `<h3>${lesson.title}</h3>`;
-
-      lesson.words.forEach(w => {
-        const p = document.createElement("p");
-        p.innerHTML = `
-          <span class="word" data-audio="${w.word}">
-            ${w.word}${w.romaji ? " (" + w.romaji + ")" : ""}
-          </span>
-          – ${w.example}
-        `;
-        les.appendChild(p);
-      });
-
-      sec.appendChild(les);
-    });
-
-    app.appendChild(sec);
-  });
-
-  bindWordAudio();
-}
-
-/* ======================================================
-   AUDIO HANDLING (PATH SWITCH ONLY)
-====================================================== */
-function bindWordAudio() {
-  document.querySelectorAll(".word").forEach(el => {
-    el.addEventListener("click", () => {
-      const audioFile = AUDIO_PATHS[currentLang] + el.dataset.audio + ".mp3";
-      const audio = new Audio(audioFile);
-      audio.play().catch(() => {});
-    });
-  });
-}
-
-/* ======================================================
-   LANGUAGE TOGGLE
-====================================================== */
-document.querySelectorAll(".flag").forEach(flag => {
-  flag.addEventListener("click", () => {
-    document.querySelectorAll(".flag").forEach(f => f.classList.remove("active"));
-    flag.classList.add("active");
-
-    currentLang = flag.dataset.lang;
-    document.body.classList.toggle("jp", currentLang === "jp");
-
-    renderApp();
-  });
-});
-
-/* ======================================================
-   INIT
-====================================================== */
-renderApp();
+buildAll();
+updateStats();
 </script>
 </body>
 </html>
