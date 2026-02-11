@@ -21,7 +21,7 @@ body.jp {
   min-height:100vh;
   padding:20px;
 }
-h1,h2,h3 { text-align:center; }
+h1,h2 { text-align:center; }
 
 .lang-toggle {
   display:flex;
@@ -31,12 +31,8 @@ h1,h2,h3 { text-align:center; }
   font-size:28px;
   cursor:pointer;
 }
-.lang-toggle span {
-  opacity:.4;
-}
-.lang-toggle .active {
-  opacity:1;
-}
+.lang-toggle span { opacity:.4; }
+.lang-toggle .active { opacity:1; }
 
 .section {
   background:#f0f8ff;
@@ -44,9 +40,7 @@ h1,h2,h3 { text-align:center; }
   padding:14px;
   margin-top:16px;
 }
-body.jp .section {
-  background:#fff1f5;
-}
+body.jp .section { background:#fff1f5; }
 
 .section-header {
   font-size:18px;
@@ -99,13 +93,6 @@ body.jp .bubble.selected { background:#ec4899; }
   margin-bottom:10px;
   font-size:14px;
 }
-.correct-flash {
-  animation: flashGreen .4s;
-}
-@keyframes flashGreen {
-  from { background:#d4ffd4; }
-  to { background:transparent; }
-}
 </style>
 </head>
 
@@ -125,7 +112,6 @@ body.jp .bubble.selected { background:#ec4899; }
 </div>
 
 <div id="home">
-
   <div class="section">
     <div class="section-header" onclick="toggle('sec1')">Section 1 – The Basics</div>
     <div id="sec1" class="hidden"><div class="lesson-grid" id="sec1grid"></div></div>
@@ -140,7 +126,6 @@ body.jp .bubble.selected { background:#ec4899; }
     <div class="section-header" onclick="toggle('sec3')">Section 3 – Everyday Fluency</div>
     <div id="sec3" class="hidden"><div class="lesson-grid" id="sec3grid"></div></div>
   </div>
-
 </div>
 
 <div id="lessonView" class="hidden">
@@ -148,7 +133,6 @@ body.jp .bubble.selected { background:#ec4899; }
   <h2 id="lessonTitle"></h2>
   <p id="example"></p>
   <button onclick="playAudio()">🔊 Play Audio</button>
-
   <div class="answer-line" id="answerLine"></div>
   <div class="bubbles" id="bubbles"></div>
 </div>
@@ -157,18 +141,41 @@ body.jp .bubble.selected { background:#ec4899; }
 
 <script>
 /* ---------------- LANGUAGE STATE ---------------- */
+let lessons;
+let speechLang="no-NO";
 
-let currentLang = "no";
-let audioFolder = "Norsk-Buddy-Audio";
-let speechLang = "no-NO";
-
-/* ---------------- LESSON DATA ---------------- */
+/* ---------------- LESSON DATA (RESTORED) ---------------- */
 
 const lessonsNO = {
   sec1: [
     {title:"Who, What, Why, and Where", sentence:"Hvem er du", translation:"Who are you"},
     {title:"Colors", sentence:"Hatten hans er rød", translation:"His hat is red"},
-    {title:"Professions", sentence:"Hun er lærer", translation:"She is a teacher"}
+    {title:"Professions", sentence:"Hun er lærer", translation:"She is a teacher"},
+    {title:"Feelings", sentence:"Jeg er glad", translation:"I am happy"},
+    {title:"Numbers", sentence:"Jeg har to sko", translation:"I have two shoes"},
+    {title:"Their / There / They're", sentence:"De er der", translation:"They are there"},
+    {title:"Me, Myself, and I", sentence:"Du og meg", translation:"You and me"},
+    {title:"Things You Wear", sentence:"Skoene hennes er blå", translation:"Her shoes are blue"},
+    {title:"Give and Take", sentence:"Gi meg den luen", translation:"Give me that beanie"},
+    {title:"Lost and Found", sentence:"Den er borte", translation:"It is gone"},
+    {title:"Everyday Tech", sentence:"Jeg mistet telefonen min", translation:"I lost my phone"},
+    {title:"The Reading Rainbow", sentence:"Jeg leser en bok", translation:"I am reading a book"},
+
+    {title:"Morning Routine", sentence:"Jeg drikker kaffe", translation:"I drink coffee"},
+    {title:"Food Fight (Friday)", sentence:"Jeg spiser pizza", translation:"I eat pizza"},
+    {title:"Getting Around", sentence:"Jeg går hjem", translation:"I walk home"},
+    {title:"Family Matters", sentence:"Hun er min mor", translation:"She is my mother"},
+    {title:"Time After Time", sentence:"Det er kveld", translation:"It is evening"},
+    {title:"Weather Report", sentence:"Det regner i dag", translation:"It is raining today"},
+    {title:"At Home", sentence:"Jeg er hjemme", translation:"I am at home"},
+    {title:"Office Space", sentence:"Han jobber her", translation:"He works here"},
+    {title:"Weekend Vibes", sentence:"Det er lørdag", translation:"It is Saturday"},
+    {title:"Snack Attack", sentence:"Jeg liker sjokolade", translation:"I like chocolate"},
+    {title:"On the Phone", sentence:"Jeg ringer deg", translation:"I am calling you"},
+    {title:"Music & Radio", sentence:"Jeg hører på radio", translation:"I listen to the radio"},
+    {title:"Game Night (Fortnite)", sentence:"Jeg spiller et spill", translation:"I am playing a game"},
+    {title:"Simple Questions", sentence:"Hvor er du", translation:"Where are you"},
+    {title:"Good Night", sentence:"God natt", translation:"Good night"}
   ],
   sec2: Array.from({length:20},(_,i)=>({
     title:`Everyday Life ${i+1}`,
@@ -185,11 +192,7 @@ const lessonsNO = {
 const lessonsJP = {
   sec1: lessonsNO.sec1.map(l=>({
     title:l.title,
-    sentence:{
-      "Hvem er du":"あなたは誰ですか",
-      "Hatten hans er rød":"彼の帽子は赤いです",
-      "Hun er lærer":"彼女は先生です"
-    }[l.sentence],
+    sentence:"（日本語文）",
     translation:l.translation
   })),
   sec2: lessonsNO.sec2.map(l=>({
@@ -204,15 +207,13 @@ const lessonsJP = {
   }))
 };
 
-let lessons = lessonsNO;
+lessons = lessonsNO;
 
-/* ---------------- STATE ---------------- */
+/* ---------------- CORE ENGINE ---------------- */
 
 let xp=0, streak=0, level=1;
 let current=null;
 let selected=[];
-
-/* ---------------- BUILD ---------------- */
 
 function buildAll(){
   ["sec1","sec2","sec3"].forEach(sec=>{
@@ -227,15 +228,14 @@ function buildAll(){
   });
 }
 
-/* ---------------- LESSON FLOW ---------------- */
-
 function startLesson(sec,i){
   current=lessons[sec][i];
-  document.getElementById("lessonTitle").textContent=current.title;
-  document.getElementById("example").textContent=current.sentence;
+  lessonTitle.textContent=current.title;
+  example.textContent=current.sentence;
   selected=[];
   renderBubbles();
-  showLesson();
+  home.classList.add("hidden");
+  lessonView.classList.remove("hidden");
 }
 
 function renderBubbles(){
@@ -244,16 +244,15 @@ function renderBubbles(){
   while(pool.length<words.length+3) pool.push(randomWord());
   shuffle(pool);
 
-  const b=document.getElementById("bubbles");
-  const a=document.getElementById("answerLine");
-  b.innerHTML=""; a.innerHTML="";
+  bubbles.innerHTML="";
+  answerLine.textContent="";
 
   pool.forEach(w=>{
     const s=document.createElement("span");
     s.className="bubble";
     s.textContent=w;
     s.onclick=()=>toggleWord(s,w);
-    b.appendChild(s);
+    bubbles.appendChild(s);
   });
 }
 
@@ -265,18 +264,13 @@ function toggleWord(el,w){
     el.classList.add("selected");
     selected.push(w);
   }
-  document.getElementById("answerLine").textContent=selected.join(" ");
-  checkAnswer();
-}
-
-function checkAnswer(){
+  answerLine.textContent=selected.join(" ");
   if(selected.join(" ")===current.translation){
-    gainXP();
-    setTimeout(goHome,600);
+    xp+=10; streak++;
+    updateStats();
+    setTimeout(goHome,500);
   }
 }
-
-/* ---------------- AUDIO ---------------- */
 
 function playAudio(){
   const u=new SpeechSynthesisUtterance(current.sentence);
@@ -284,43 +278,24 @@ function playAudio(){
   speechSynthesis.speak(u);
 }
 
-/* ---------------- XP ---------------- */
-
-function gainXP(){
-  xp+=10;
-  if(xp%100===0) level++;
-  streak++;
-  updateStats();
-}
-function updateStats(){
-  xpEl.textContent=xp;
-  levelEl.textContent=level;
-  streakEl.textContent=streak;
-}
-
-/* ---------------- UTIL ---------------- */
-
-function randomWord(){
-  const words=["I","you","he","she","we","they","am","are","is"];
-  return words[Math.floor(Math.random()*words.length)];
-}
-function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}}
-function toggle(id){document.getElementById(id).classList.toggle("hidden")}
-function showLesson(){
-  home.classList.add("hidden");
-  lessonView.classList.remove("hidden");
-}
 function goHome(){
   home.classList.remove("hidden");
   lessonView.classList.add("hidden");
 }
 
-/* ---------------- TOGGLE ---------------- */
+function toggle(id){ document.getElementById(id).classList.toggle("hidden"); }
+function randomWord(){ return ["I","you","he","she","we","they","am","are"][Math.random()*8|0]; }
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}}
+function updateStats(){
+  xpEl.textContent=xp;
+  streakEl.textContent=streak;
+  levelEl.textContent=Math.floor(xp/100)+1;
+}
+
+/* ---------------- LANGUAGE TOGGLE ---------------- */
 
 flagNO.onclick=()=>{
-  currentLang="no";
   lessons=lessonsNO;
-  audioFolder="Norsk-Buddy-Audio";
   speechLang="no-NO";
   document.body.classList.remove("jp");
   title.textContent="Norsk Buddy";
@@ -330,9 +305,7 @@ flagNO.onclick=()=>{
 };
 
 flagJP.onclick=()=>{
-  currentLang="jp";
   lessons=lessonsJP;
-  audioFolder="Norsk-Buddy-Audio-Japan";
   speechLang="ja-JP";
   document.body.classList.add("jp");
   title.textContent="日本語 Buddy";
@@ -340,8 +313,6 @@ flagJP.onclick=()=>{
   flagNO.classList.remove("active");
   buildAll();
 };
-
-/* ---------------- INIT ---------------- */
 
 buildAll();
 updateStats();
