@@ -1,320 +1,435 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
 <title>Norsk Buddy</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 <style>
+:root {
+  --bg: #0f172a;
+  --panel: #1e293b;
+  --accent: #38bdf8;
+  --accent-soft: #0ea5e9;
+  --good: #22c55e;
+  --bad: #ef4444;
+  --text: #e5e7eb;
+  --muted: #94a3b8;
+}
+
+* { box-sizing: border-box; }
+
 body {
-  margin:0;
-  font-family:system-ui,sans-serif;
-  background:linear-gradient(135deg,#1cb0f6,#58cc02);
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
-.app {
-  max-width:480px;
-  margin:auto;
-  background:#fff;
-  min-height:100vh;
-  padding:20px;
+
+header {
+  padding: 16px;
+  background: linear-gradient(135deg, #020617, #020617);
+  border-bottom: 1px solid #334155;
+  text-align: center;
 }
-h1,h2,h3 { text-align:center; }
+
+header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+header small {
+  color: var(--muted);
+}
+
+main {
+  padding: 16px;
+  max-width: 900px;
+  margin: auto;
+}
 
 .section {
-  background:#f0f8ff;
-  border-radius:16px;
-  padding:14px;
-  margin-top:16px;
+  background: var(--panel);
+  border-radius: 12px;
+  margin-bottom: 16px;
+  overflow: hidden;
 }
+
 .section-header {
-  font-size:18px;
-  font-weight:bold;
-  cursor:pointer;
+  padding: 14px 16px;
+  cursor: pointer;
+  background: #020617;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
-.hidden { display:none; }
 
-.lesson-grid {
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:12px;
-  margin-top:12px;
+.section-header:hover {
+  background: #020617;
 }
+
+.section-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.section-content {
+  display: none;
+  padding: 16px;
+}
+
 .lesson {
-  background:#fff;
-  border-radius:12px;
-  padding:14px;
-  text-align:center;
-  cursor:pointer;
-  box-shadow:0 2px 4px rgba(0,0,0,.1);
+  padding: 12px;
+  border-radius: 10px;
+  background: #020617;
+  margin-bottom: 10px;
+  cursor: pointer;
 }
 
-.word {
-  cursor:pointer;
-  text-decoration:underline;
-  position:relative;
+.lesson:hover {
+  outline: 2px solid var(--accent-soft);
 }
 
-.tooltip {
-  position:absolute;
-  bottom:120%;
-  left:50%;
-  transform:translateX(-50%);
-  background:#333;
-  color:#fff;
-  padding:6px 8px;
-  border-radius:6px;
-  font-size:12px;
-  white-space:nowrap;
-  z-index:10;
+.lesson-title {
+  font-weight: bold;
 }
 
-.bubbles {
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-  margin-top:16px;
-}
-.bubble {
-  background:#e0e0e0;
-  padding:8px 12px;
-  border-radius:20px;
-  cursor:pointer;
-}
-.bubble.selected { background:#58cc02; color:#fff; }
-.bubble.wrong { background:#ff6b6b; color:#fff; }
-
-.answer-line {
-  min-height:40px;
-  border-bottom:2px solid #ccc;
-  margin-top:12px;
-  padding:6px;
+.lesson-sub {
+  color: var(--muted);
+  font-size: 0.9rem;
 }
 
-.stats {
-  display:flex;
-  justify-content:space-between;
-  margin-bottom:10px;
-  font-size:14px;
+button {
+  background: var(--accent);
+  border: none;
+  border-radius: 999px;
+  padding: 10px 16px;
+  color: black;
+  font-weight: bold;
+  cursor: pointer;
 }
-.correct-flash {
-  animation: flashGreen .4s;
+
+button.secondary {
+  background: #020617;
+  color: var(--text);
+  border: 1px solid #334155;
 }
-@keyframes flashGreen {
-  from { background:#d4ffd4; }
-  to { background:transparent; }
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.lesson-view {
+  position: fixed;
+  inset: 0;
+  background: #020617;
+  z-index: 100;
+  display: none;
+  flex-direction: column;
+}
+
+.lesson-top {
+  padding: 16px;
+  border-bottom: 1px solid #334155;
+}
+
+.lesson-body {
+  padding: 16px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.word-card {
+  background: #020617;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.word-card h3 {
+  margin: 0 0 6px 0;
+}
+
+.word-card small {
+  color: var(--muted);
+}
+
+.sentence {
+  margin: 12px 0;
+  font-size: 1.1rem;
+}
+
+.sentence span {
+  cursor: pointer;
+  border-bottom: 1px dotted var(--accent-soft);
+}
+
+.translation-line {
+  min-height: 44px;
+  padding: 10px;
+  border-radius: 8px;
+  background: #020617;
+  margin-bottom: 10px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.word-bubble {
+  padding: 8px 12px;
+  background: #020617;
+  border-radius: 999px;
+  cursor: pointer;
+  border: 1px solid #334155;
+}
+
+.word-bubble.good {
+  background: var(--good);
+  color: black;
+}
+
+.word-bubble.bad {
+  background: var(--bad);
+  color: white;
+}
+
+.word-bank {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.feedback {
+  margin-top: 10px;
+  min-height: 20px;
+  font-size: 0.9rem;
+}
+
+.feedback.good { color: var(--good); }
+.feedback.bad { color: var(--bad); }
+
+.practice-panel {
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: 12px;
+  background: #020617;
+}
+
+input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  background: #020617;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+
+.mascot {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  width: 90px;
+  opacity: 0.9;
 }
 </style>
 </head>
 
 <body>
-<div class="app">
 
-<h1>🇳🇴 Norsk Buddy</h1>
+<header>
+  <h1>Norsk Buddy 🇳🇴</h1>
+  <small>Learn Norwegian the smart (and fun) way</small>
+</header>
 
-<div class="stats">
-  <div>🔥 Streak: <span id="streak">0</span></div>
-  <div>⭐ XP: <span id="xp">0</span> (Lv <span id="level">1</span>)</div>
-</div>
+<main id="app"></main>
 
-<div id="home">
+<img class="mascot" src="mascot.png" alt="Mascot"/>
 
-  <div class="section">
-    <div class="section-header" onclick="toggle('sec1')">Section 1 – The Basics</div>
-    <div id="sec1" class="hidden"><div class="lesson-grid" id="sec1grid"></div></div>
+<div class="lesson-view" id="lessonView">
+  <div class="lesson-top">
+    <button class="secondary" onclick="closeLesson()">← Back</button>
+    <h2 id="lessonTitle"></h2>
   </div>
-
-  <div class="section">
-    <div class="section-header" onclick="toggle('sec2')">Section 2 – Building Confidence</div>
-    <div id="sec2" class="hidden"><div class="lesson-grid" id="sec2grid"></div></div>
-  </div>
-
-  <div class="section">
-    <div class="section-header" onclick="toggle('sec3')">Section 3 – Everyday Fluency</div>
-    <div id="sec3" class="hidden"><div class="lesson-grid" id="sec3grid"></div></div>
-  </div>
-
-</div>
-
-<div id="lessonView" class="hidden">
-  <button onclick="goHome()">← Back</button>
-  <h2 id="lessonTitle"></h2>
-  <p id="example"></p>
-  <button onclick="playAudio()">🔊 Play Audio</button>
-
-  <div class="answer-line" id="answerLine"></div>
-  <div class="bubbles" id="bubbles"></div>
-</div>
-
+  <div class="lesson-body" id="lessonBody"></div>
 </div>
 
 <script>
-/* ---------------- CORE DATA ---------------- */
+/* ======================================================
+   CORE STATE
+====================================================== */
+let currentLesson = null;
+let xp = 0;
+let streak = 0;
 
-const lessons = {
-  sec1: [
-    {title:"Who, What, Why, and Where", sentence:"Hvem er du", translation:"Who are you"},
-    {title:"Colors", sentence:"Hatten hans er rød", translation:"His hat is red"},
-    {title:"Professions", sentence:"Hun er lærer", translation:"She is a teacher"},
-    {title:"Feelings", sentence:"Jeg er glad", translation:"I am happy"},
-    {title:"Numbers", sentence:"Jeg har to sko", translation:"I have two shoes"},
-    {title:"Their / There / They're", sentence:"De er der", translation:"They are there"},
-    {title:"Me, Myself, and I", sentence:"Du og meg", translation:"You and me"},
-    {title:"Things You Wear", sentence:"Skoene hennes er blå", translation:"Her shoes are blue"},
-    {title:"Give and Take", sentence:"Gi meg den luen", translation:"Give me that beanie"},
-    {title:"Lost and Found", sentence:"Den er borte", translation:"It is gone"},
-    {title:"Everyday Tech", sentence:"Jeg mistet telefonen min", translation:"I lost my phone"},
-    {title:"The Reading Rainbow", sentence:"Jeg leser en bok", translation:"I am reading a book"},
-
-    /* 15 NEW BASIC LESSONS */
-    {title:"Morning Routine", sentence:"Jeg drikker kaffe", translation:"I drink coffee"},
-    {title:"Food Fight (Friday)", sentence:"Jeg spiser pizza", translation:"I eat pizza"},
-    {title:"Getting Around", sentence:"Jeg går hjem", translation:"I walk home"},
-    {title:"Family Matters", sentence:"Hun er min mor", translation:"She is my mother"},
-    {title:"Time After Time", sentence:"Det er kveld", translation:"It is evening"},
-    {title:"Weather Report", sentence:"Det regner i dag", translation:"It is raining today"},
-    {title:"At Home", sentence:"Jeg er hjemme", translation:"I am at home"},
-    {title:"Office Space", sentence:"Han jobber her", translation:"He works here"},
-    {title:"Weekend Vibes", sentence:"Det er lørdag", translation:"It is Saturday"},
-    {title:"Snack Attack", sentence:"Jeg liker sjokolade", translation:"I like chocolate"},
-    {title:"On the Phone", sentence:"Jeg ringer deg", translation:"I am calling you"},
-    {title:"Music & Radio", sentence:"Jeg hører på radio", translation:"I listen to the radio"},
-    {title:"Game Night (Fortnite)", sentence:"Jeg spiller et spill", translation:"I am playing a game"},
-    {title:"Simple Questions", sentence:"Hvor er du", translation:"Where are you"},
-    {title:"Good Night", sentence:"God natt", translation:"Good night"}
-  ],
-
-  sec2: Array.from({length:20},(_,i)=>({
-    title:`Everyday Life ${i+1}`,
-    sentence:i%5===0?"Jeg ser på TV":"Jeg jobber i dag",
-    translation:i%5===0?"I am watching TV":"I am working today"
-  })),
-
-  sec3: Array.from({length:20},(_,i)=>({
-    title:`Daily Stories ${i+1}`,
-    sentence:i%4===0?"Han snakker med legen":"Jeg ser filmen",
-    translation:i%4===0?"He is talking with the doctor":"I am watching the movie"
-  }))
-};
-
-/* ---------------- STATE ---------------- */
-
-let xp=0, streak=0, level=1;
-let current=null;
-let selected=[];
-
-/* ---------------- INIT ---------------- */
-
-function build(section,id){
-  lessons[section].forEach((l,i)=>{
-    const d=document.createElement("div");
-    d.className="lesson";
-    d.textContent=l.title;
-    d.onclick=()=>startLesson(section,i);
-    document.getElementById(id).appendChild(d);
-  });
-}
-build("sec1","sec1grid");
-build("sec2","sec2grid");
-build("sec3","sec3grid");
-
-/* ---------------- LESSON FLOW ---------------- */
-
-function startLesson(sec,i){
-  current=lessons[sec][i];
-  document.getElementById("lessonTitle").textContent=current.title;
-  document.getElementById("example").textContent=current.sentence;
-  selected=[];
-  renderBubbles();
-  showLesson();
+/* ======================================================
+   UTILITIES
+====================================================== */
+function toggleSection(id) {
+  const el = document.getElementById(id);
+  el.style.display = el.style.display === "none" ? "block" : "none";
 }
 
-function renderBubbles(){
-  const words=current.translation.split(" ");
-  const pool=[...words];
-  while(pool.length<words.length+3) pool.push(randomWord());
-  shuffle(pool);
-
-  const b=document.getElementById("bubbles");
-  const a=document.getElementById("answerLine");
-  b.innerHTML=""; a.innerHTML="";
-
-  pool.forEach(w=>{
-    const s=document.createElement("span");
-    s.className="bubble";
-    s.textContent=w;
-    s.onclick=()=>toggleWord(s,w);
-    b.appendChild(s);
-  });
+function closeLesson() {
+  document.getElementById("lessonView").style.display = "none";
 }
 
-function toggleWord(el,w){
-  if(el.classList.contains("selected")){
-    el.classList.remove("selected","wrong");
-    selected=selected.filter(x=>x!==w);
-  } else {
-    el.classList.add("selected");
-    selected.push(w);
-  }
-  document.getElementById("answerLine").textContent=selected.join(" ");
-  checkAnswer();
-}
-
-function checkAnswer(){
-  const correct=current.translation.split(" ");
-  selected.forEach((w,i)=>{
-    const bubbles=[...document.querySelectorAll(".bubble")];
-    if(correct[i]!==w){
-      bubbles.find(b=>b.textContent===w).classList.add("wrong");
-    }
-  });
-
-  if(selected.join(" ")===current.translation){
-    document.getElementById("lessonView").classList.add("correct-flash");
-    gainXP();
-    setTimeout(goHome,600);
-  }
-}
-
-/* ---------------- AUDIO ---------------- */
-
-function playAudio(){
-  const u=new SpeechSynthesisUtterance(current.sentence);
-  u.lang="no-NO";
-  speechSynthesis.speak(u);
-}
-
-/* ---------------- XP & STREAK ---------------- */
-
-function gainXP(){
-  xp+=10;
-  if(xp%100===0) level++;
-  streak++;
-  updateStats();
-}
-
-function updateStats(){
-  document.getElementById("xp").textContent=xp;
-  document.getElementById("level").textContent=level;
-  document.getElementById("streak").textContent=streak;
-}
-
-/* ---------------- UTIL ---------------- */
-
-function randomWord(){
-  const words=["I","you","he","she","it","we","they","have","am","are"];
-  return words[Math.floor(Math.random()*words.length)];
-}
-function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}}
-function toggle(id){document.getElementById(id).classList.toggle("hidden")}
-function showLesson(){
-  document.getElementById("home").classList.add("hidden");
-  document.getElementById("lessonView").classList.remove("hidden");
-}
-function goHome(){
-  document.getElementById("home").classList.remove("hidden");
-  document.getElementById("lessonView").classList.add("hidden");
+function shuffle(arr) {
+  return arr.sort(() => Math.random() - 0.5);
 }
 </script>
+
+<script>
+/* ======================================================
+   DICTIONARY
+====================================================== */
+const DICT = {
+  "jeg":"I","du":"you","meg":"me","hans":"his","hennes":"hers",
+  "sko":"shoes","rød":"red","blå":"blue","gi":"give","ta":"take",
+  "bok":"book","telefon":"phone","mistet":"lost","finner":"finds",
+  "glad":"happy","trist":"sad","en":"one","to":"two","tre":"three",
+  "der":"there","deres":"their","de er":"they are"
+};
+
+/* ======================================================
+   LESSON DATA
+====================================================== */
+const SECTIONS = [
+{
+  title:"Section 1 – The Basics",
+  lessons:[
+    {
+      title:"Me, Myself, and I",
+      words:[
+        {no:"jeg",en:"I",ex:"Jeg er her",note:"Used when talking about yourself"},
+        {no:"meg",en:"me",ex:"Se på meg",note:"Object form of I"},
+        {no:"du",en:"you",ex:"Du er snill",note:"Informal you"},
+        {no:"hans",en:"his",ex:"Det er hans bok",note:"Ownership"},
+        {no:"hennes",en:"hers",ex:"Den er hennes",note:"Ownership"}
+      ],
+      sentence:{no:"Du og meg",en:"You and me"}
+    },
+    {
+      title:"Colors Everywhere",
+      words:[
+        {no:"rød",en:"red",ex:"Bilen er rød",note:"Color"},
+        {no:"blå",en:"blue",ex:"Himmelen er blå",note:"Color"},
+        {no:"svart",en:"black",ex:"Katten er svart",note:"Color"},
+        {no:"hvit",en:"white",ex:"Snøen er hvit",note:"Color"},
+        {no:"grønn",en:"green",ex:"Gresset er grønt",note:"Color"}
+      ],
+      sentence:{no:"Hatten er rød",en:"The hat is red"}
+    }
+  ]
+}
+];
+
+/* ======================================================
+   APP RENDER
+====================================================== */
+const app = document.getElementById("app");
+
+SECTIONS.forEach((sec,i)=>{
+  const s = document.createElement("div");
+  s.className="section";
+  s.innerHTML=`
+    <div class="section-header" onclick="toggleSection('sec${i}')">
+      <h2>${sec.title}</h2>
+      <span>▼</span>
+    </div>
+    <div class="section-content" id="sec${i}" style="display:none"></div>`;
+  app.appendChild(s);
+
+  const sc = s.querySelector(".section-content");
+  sec.lessons.forEach(l=>{
+    const el = document.createElement("div");
+    el.className="lesson";
+    el.innerHTML=`
+      <div class="lesson-title">${l.title}</div>
+      <div class="lesson-sub">${l.words.length} words</div>`;
+    el.onclick=()=>openLesson(l);
+    sc.appendChild(el);
+  });
+});
+
+/* ======================================================
+   LESSON VIEW
+====================================================== */
+function openLesson(lesson){
+  currentLesson = lesson;
+  document.getElementById("lessonView").style.display="flex";
+  document.getElementById("lessonTitle").innerText = lesson.title;
+  const body = document.getElementById("lessonBody");
+  body.innerHTML="";
+
+  lesson.words.forEach(w=>{
+    const c=document.createElement("div");
+    c.className="word-card";
+    c.innerHTML=`
+      <h3>${w.no} – ${w.en}</h3>
+      <small>${w.note}</small>
+      <div class="sentence">${makeClickable(w.ex)}</div>`;
+    body.appendChild(c);
+  });
+
+  renderSentenceExercise(body, lesson.sentence);
+}
+
+/* ======================================================
+   SENTENCE BUILDER
+====================================================== */
+function renderSentenceExercise(container, sentence){
+  const words = sentence.en.split(" ");
+  const bank = shuffle([...words,"the","and","is","a"]);
+
+  const line = document.createElement("div");
+  line.className="translation-line";
+
+  const wb = document.createElement("div");
+  wb.className="word-bank";
+
+  let answer=[];
+
+  bank.forEach(w=>{
+    const b=document.createElement("div");
+    b.className="word-bubble";
+    b.innerText=w;
+    b.onclick=()=>{
+      answer.push(w);
+      line.innerHTML=answer.join(" ");
+      if(answer.join(" ")===sentence.en){
+        b.classList.add("good");
+      } else if(answer.length>=words.length){
+        b.classList.add("bad");
+        answer=[];
+        line.innerHTML="";
+      }
+    };
+    wb.appendChild(b);
+  });
+
+  container.innerHTML+=`
+    <h3>Translate:</h3>
+    <div class="sentence">${makeClickable(sentence.no)}</div>`;
+  container.appendChild(line);
+  container.appendChild(wb);
+}
+
+/* ======================================================
+   CLICKABLE WORDS
+====================================================== */
+function makeClickable(text){
+  return text.split(" ").map(w=>{
+    const clean=w.toLowerCase();
+    if(DICT[clean]){
+      return `<span onclick="alert('${clean}: ${DICT[clean]}')">${w}</span>`;
+    }
+    return w;
+  }).join(" ");
+}
+</script>
+
 </body>
 </html>
 
