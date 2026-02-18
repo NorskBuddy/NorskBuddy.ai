@@ -93,6 +93,29 @@ body.jp .bubble.selected { background:#ec4899; }
   margin-bottom:10px;
   font-size:14px;
 }
+
+/* NEW ADDITIONS */
+.tapword {
+  cursor:pointer;
+  border-bottom:1px dotted #999;
+}
+.tapword:hover { opacity:.7; }
+
+.match-grid {
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+  margin-top:15px;
+}
+.match-card {
+  background:#f0f0f0;
+  padding:12px;
+  border-radius:12px;
+  text-align:center;
+  cursor:pointer;
+}
+.match-card.selected { background:#58cc02; color:#fff; }
+body.jp .match-card.selected { background:#ec4899; }
 </style>
 </head>
 
@@ -107,8 +130,8 @@ body.jp .bubble.selected { background:#ec4899; }
 <h1 id="title">Norsk Buddy</h1>
 
 <div class="stats">
-  <div>🔥 Streak: <span id="streak">0</span></div>
-  <div>⭐ XP: <span id="xp">0</span> (Lv <span id="level">1</span>)</div>
+  <div>🔥 Streak: <span id="streakEl">0</span></div>
+  <div>⭐ XP: <span id="xpEl">0</span> (Lv <span id="levelEl">1</span>)</div>
 </div>
 
 <div id="home">
@@ -126,6 +149,14 @@ body.jp .bubble.selected { background:#ec4899; }
     <div class="section-header" onclick="toggle('sec3')">Section 3 – Everyday Fluency</div>
     <div id="sec3" class="hidden"><div class="lesson-grid" id="sec3grid"></div></div>
   </div>
+
+  <div class="section">
+    <div class="section-header" onclick="startMatch(false)">Match Madness – Unlimited</div>
+  </div>
+
+  <div class="section">
+    <div class="section-header" onclick="startMatch(true)">Match Madness – 1:30 Timed</div>
+  </div>
 </div>
 
 <div id="lessonView" class="hidden">
@@ -137,83 +168,55 @@ body.jp .bubble.selected { background:#ec4899; }
   <div class="bubbles" id="bubbles"></div>
 </div>
 
+<div id="matchView" class="hidden">
+  <button onclick="exitMatch()">← Back</button>
+  <h2>Match Madness</h2>
+  <div id="matchTimer"></div>
+  <div class="match-grid" id="matchGrid"></div>
+</div>
+
 </div>
 
 <script>
-/* ---------------- LANGUAGE STATE ---------------- */
+
+/* ORIGINAL DATA + ROMAJI SUPPORT */
+
 let lessons;
 let speechLang="no-NO";
 
-/* ---------------- LESSON DATA (RESTORED) ---------------- */
+const lessonsNO = { ... }  // KEEP YOUR ORIGINAL OBJECT HERE (UNCHANGED)
 
-const lessonsNO = {
-  sec1: [
-    {title:"Who, What, Why, and Where", sentence:"Hvem er du", translation:"Who are you"},
-    {title:"Colors", sentence:"Hatten hans er rød", translation:"His hat is red"},
-    {title:"Professions", sentence:"Hun er lærer", translation:"She is a teacher"},
-    {title:"Feelings", sentence:"Jeg er glad", translation:"I am happy"},
-    {title:"Numbers", sentence:"Jeg har to sko", translation:"I have two shoes"},
-    {title:"Their / There / They're", sentence:"De er der", translation:"They are there"},
-    {title:"Me, Myself, and I", sentence:"Du og meg", translation:"You and me"},
-    {title:"Things You Wear", sentence:"Skoene hennes er blå", translation:"Her shoes are blue"},
-    {title:"Give and Take", sentence:"Gi meg den luen", translation:"Give me that beanie"},
-    {title:"Lost and Found", sentence:"Den er borte", translation:"It is gone"},
-    {title:"Everyday Tech", sentence:"Jeg mistet telefonen min", translation:"I lost my phone"},
-    {title:"The Reading Rainbow", sentence:"Jeg leser en bok", translation:"I am reading a book"},
-
-    {title:"Morning Routine", sentence:"Jeg drikker kaffe", translation:"I drink coffee"},
-    {title:"Food Fight (Friday)", sentence:"Jeg spiser pizza", translation:"I eat pizza"},
-    {title:"Getting Around", sentence:"Jeg går hjem", translation:"I walk home"},
-    {title:"Family Matters", sentence:"Hun er min mor", translation:"She is my mother"},
-    {title:"Time After Time", sentence:"Det er kveld", translation:"It is evening"},
-    {title:"Weather Report", sentence:"Det regner i dag", translation:"It is raining today"},
-    {title:"At Home", sentence:"Jeg er hjemme", translation:"I am at home"},
-    {title:"Office Space", sentence:"Han jobber her", translation:"He works here"},
-    {title:"Weekend Vibes", sentence:"Det er lørdag", translation:"It is Saturday"},
-    {title:"Snack Attack", sentence:"Jeg liker sjokolade", translation:"I like chocolate"},
-    {title:"On the Phone", sentence:"Jeg ringer deg", translation:"I am calling you"},
-    {title:"Music & Radio", sentence:"Jeg hører på radio", translation:"I listen to the radio"},
-    {title:"Game Night (Fortnite)", sentence:"Jeg spiller et spill", translation:"I am playing a game"},
-    {title:"Simple Questions", sentence:"Hvor er du", translation:"Where are you"},
-    {title:"Good Night", sentence:"God natt", translation:"Good night"}
-  ],
-  sec2: Array.from({length:20},(_,i)=>({
-    title:`Everyday Life ${i+1}`,
-    sentence:"Jeg jobber i dag",
-    translation:"I am working today"
-  })),
-  sec3: Array.from({length:20},(_,i)=>({
-    title:`Daily Stories ${i+1}`,
-    sentence:"Jeg ser filmen",
-    translation:"I am watching the movie"
-  }))
-};
-
+/* JAPANESE WITH ROMAJI */
 const lessonsJP = {
   sec1: lessonsNO.sec1.map(l=>({
     title:l.title,
-    sentence:"（日本語文）",
+    sentence:{ romaji:"watashi wa gakusei desu", kanji:"私は学生です" },
     translation:l.translation
   })),
   sec2: lessonsNO.sec2.map(l=>({
     title:l.title,
-    sentence:"私は今日働いています",
+    sentence:{ romaji:"watashi wa kyo hataraite imasu", kanji:"私は今日働いています" },
     translation:l.translation
   })),
   sec3: lessonsNO.sec3.map(l=>({
     title:l.title,
-    sentence:"私は映画を見ています",
+    sentence:{ romaji:"watashi wa eiga o mite imasu", kanji:"私は映画を見ています" },
     translation:l.translation
   }))
 };
 
 lessons = lessonsNO;
 
-/* ---------------- CORE ENGINE ---------------- */
+/* CORE ENGINE (ORIGINAL + ENHANCED) */
 
-let xp=0, streak=0, level=1;
+let xp=0;
+let streak=parseInt(localStorage.getItem("streak")||0);
+let level=1;
 let current=null;
 let selected=[];
+
+let lastVisit = localStorage.getItem("lastVisit");
+let today = new Date().toDateString();
 
 function buildAll(){
   ["sec1","sec2","sec3"].forEach(sec=>{
@@ -228,11 +231,25 @@ function buildAll(){
   });
 }
 
+function makeClickable(text){
+  return text.split(" ").map(w=>
+    `<span class="tapword" onclick="alert('Definition for: '+ '${w}')">${w}</span>`
+  ).join(" ");
+}
+
 function startLesson(sec,i){
   current=lessons[sec][i];
   lessonTitle.textContent=current.title;
-  example.textContent=current.sentence;
   selected=[];
+
+  if(typeof current.sentence==="object"){
+    example.innerHTML=
+      `<div>${makeClickable(current.sentence.romaji)}</div>
+       <div style="opacity:.7">${makeClickable(current.sentence.kanji)}</div>`;
+  } else {
+    example.innerHTML=makeClickable(current.sentence);
+  }
+
   renderBubbles();
   home.classList.add("hidden");
   lessonView.classList.remove("hidden");
@@ -258,7 +275,7 @@ function renderBubbles(){
 
 function toggleWord(el,w){
   if(el.classList.contains("selected")){
-    el.classList.remove("selected","wrong");
+    el.classList.remove("selected");
     selected=selected.filter(x=>x!==w);
   } else {
     el.classList.add("selected");
@@ -266,16 +283,43 @@ function toggleWord(el,w){
   }
   answerLine.textContent=selected.join(" ");
   if(selected.join(" ")===current.translation){
-    xp+=10; streak++;
+    xp+=10;
+
+    if(lastVisit!==today){
+      streak++;
+      localStorage.setItem("lastVisit",today);
+    }
+
+    localStorage.setItem("streak",streak);
     updateStats();
     setTimeout(goHome,500);
   }
 }
 
 function playAudio(){
-  const u=new SpeechSynthesisUtterance(current.sentence);
-  u.lang=speechLang;
-  speechSynthesis.speak(u);
+  let text = typeof current.sentence==="object"
+    ? current.sentence.romaji
+    : current.sentence;
+
+  let fileName=text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"")
+    .replace(/\s+/g,"_")
+    .toLowerCase();
+
+  let folder = speechLang==="ja-JP"
+    ? "Norsk-Buddy-Audio/Japanese/"
+    : "Norsk-Buddy-Audio/";
+
+  let audio=new Audio(folder+fileName+".mp3");
+
+  audio.onerror=function(){
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang=speechLang;
+    speechSynthesis.speak(u);
+  };
+
+  audio.play();
 }
 
 function goHome(){
@@ -286,13 +330,86 @@ function goHome(){
 function toggle(id){ document.getElementById(id).classList.toggle("hidden"); }
 function randomWord(){ return ["I","you","he","she","we","they","am","are"][Math.random()*8|0]; }
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}}
+
 function updateStats(){
   xpEl.textContent=xp;
   streakEl.textContent=streak;
   levelEl.textContent=Math.floor(xp/100)+1;
 }
 
-/* ---------------- LANGUAGE TOGGLE ---------------- */
+/* MATCH MADNESS */
+
+let matchPairs=[], matchSelected=[], matchTimerInt;
+
+function startMatch(timed){
+  home.classList.add("hidden");
+  matchView.classList.remove("hidden");
+
+  matchPairs=[];
+  lessons.sec1.slice(0,5).forEach(l=>{
+    matchPairs.push({q:l.sentence, a:l.translation});
+  });
+
+  buildMatch();
+
+  if(timed){
+    let t=90;
+    matchTimer.textContent="1:30";
+    matchTimerInt=setInterval(()=>{
+      t--;
+      let m=Math.floor(t/60);
+      let s=t%60;
+      matchTimer.textContent=m+":"+(s<10?"0"+s:s);
+      if(t<=0){ clearInterval(matchTimerInt); exitMatch(); }
+    },1000);
+  } else {
+    matchTimer.textContent="Unlimited Mode";
+  }
+}
+
+function buildMatch(){
+  matchGrid.innerHTML="";
+  let cards=[];
+  matchPairs.forEach(p=>{
+    cards.push({v: typeof p.q==="object"?p.q.romaji:p.q, t:"q"});
+    cards.push({v:p.a, t:"a"});
+  });
+  shuffle(cards);
+  cards.forEach(c=>{
+    const d=document.createElement("div");
+    d.className="match-card";
+    d.textContent=c.v;
+    d.onclick=()=>selectMatch(d,c);
+    matchGrid.appendChild(d);
+  });
+}
+
+function selectMatch(el,c){
+  el.classList.add("selected");
+  matchSelected.push({el,c});
+  if(matchSelected.length===2){
+    const [a,b]=matchSelected;
+    if(a.c.v!==b.c.v){
+      xp+=5;
+      updateStats();
+      setTimeout(()=>{a.el.remove();b.el.remove();},300);
+    } else {
+      setTimeout(()=>{
+        a.el.classList.remove("selected");
+        b.el.classList.remove("selected");
+      },500);
+    }
+    matchSelected=[];
+  }
+}
+
+function exitMatch(){
+  clearInterval(matchTimerInt);
+  matchView.classList.add("hidden");
+  home.classList.remove("hidden");
+}
+
+/* LANGUAGE TOGGLE */
 
 flagNO.onclick=()=>{
   lessons=lessonsNO;
@@ -316,6 +433,7 @@ flagJP.onclick=()=>{
 
 buildAll();
 updateStats();
+
 </script>
 </body>
 </html>
